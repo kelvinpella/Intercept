@@ -1,5 +1,15 @@
 import xlrd
+import pyautogui
+from tkinter import *
+from pyscreeze import ImageNotFoundException
 
+def inside_catia(data):
+    # check if catia document is opened
+    try:
+        axis = pyautogui.locateCenterOnScreen('images/catia.PNG')
+        print(axis)
+    except ImageNotFoundException:
+        print("Catia not opened.")  
 
 def excel_file(filename):
     if filename.endswith(('.xlsx', '.xls', '.csv')):
@@ -21,11 +31,15 @@ def excel_file(filename):
                     current_row.append(new_data)
             all_data.append(current_row)
 
-        print(all_data)
+        inside_catia(all_data)
 
     else:
         print(f'{filename} is not excel file.')
 
+app = Tk()
+app.wm_iconbitmap('images/intercept.ico')
+app.wm_title('INTERCEPT')
+app.mainloop()
 
-if __name__ == "__main__":
-    excel_file(filename='excel.xlsx')
+# if __name__ == "__main__":
+#     excel_file(filename='excel.xlsx')
