@@ -1,7 +1,9 @@
 import xlrd
+import ntpath
 import pyautogui
-from tkinter import *
 from pyscreeze import ImageNotFoundException
+from tkinter import *
+from tkinter import filedialog
 
 def inside_catia(data):
     # check if catia document is opened
@@ -11,10 +13,12 @@ def inside_catia(data):
     except ImageNotFoundException:
         print("Catia not opened.")  
 
-def excel_file(filename):
+def excel_file():
+    filepath = filedialog.askopenfilename(initialdir="/Desktop",title='Select File',filetypes=[("Excel files", ".xlsx .xls .csv")])
+    filename = ntpath.basename(filepath)
     if filename.endswith(('.xlsx', '.xls', '.csv')):
         # open excel and sheet
-        workbook = xlrd.open_workbook(filename)
+        workbook = xlrd.open_workbook(filepath)
         sheet = workbook.sheet_by_index(0)
 
         # Stores Position and Partcode value pairs from all rows.
@@ -31,15 +35,25 @@ def excel_file(filename):
                     current_row.append(new_data)
             all_data.append(current_row)
 
-        inside_catia(all_data)
+        # inside_catia(all_data)
+        print(all_data)
+        return filename
 
     else:
         print(f'{filename} is not excel file.')
+        return filename
+def main():
+    upload_label = Label(frame,text="Upload Excel file.",font=("Helvetica", 15)).place(x=10,y=10)
+    upload_button = Button(frame,text="Upload",font=("Helvetica", 15),command = excel_file).place(width=180,height=50,x=10,y=50)
+            
 
-app = Tk()
-app.wm_iconbitmap('images/intercept.ico')
-app.wm_title('INTERCEPT')
-app.mainloop()
-
-# if __name__ == "__main__":
-#     excel_file(filename='excel.xlsx')
+if __name__ == "__main__":
+    app = Tk()
+    app.wm_iconbitmap('images/intercept.ico')
+    app.wm_title('INTERCEPT')
+    canvas = Canvas(app,height=120, width=600).pack()
+    frame = Frame(app).place(relwidth=1,relheight=1)
+    main()
+    app.mainloop()
+    
+    
