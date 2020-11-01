@@ -30,17 +30,14 @@ class App:
         self.excel_file()
 
     def excel_file(self):
-        filepath = filedialog.askopenfilename(initialdir="/Desktop",title='Select File')#,filetypes=[("Excel files", ".xlsx .xls .csv")])
-        
+        filepath = filedialog.askopenfilename(initialdir="/Desktop",title='Select File',filetypes=[("Excel files", ".xlsx .xls .csv")])
         if not filepath:
             App(app)
         else:
             filename = ntpath.basename(filepath)
-            if filename.endswith(('.xlsx', '.xls', '.csv')):
+            if filename.lower().endswith(('.xlsx', '.xls', '.csv')):
                 upload_progress = Label(self.frame,text="File uploading",font=("Helvetica", 13))
-                upload_progress.pack(side='left',padx=10)
                 row_progress = ttk.Progressbar(self.frame,orient= HORIZONTAL,length=300,mode="determinate")
-                row_progress.pack(side='left')
                 # open excel and sheet
                 workbook = xlrd.open_workbook(filepath)
                 sheet = workbook.sheet_by_index(0)
@@ -51,6 +48,8 @@ class App:
                 # loop over rows and columns to extract Position and Partcode pairs
                 for row in range(sheet.nrows):
                     current_row = []
+                    upload_progress.pack(side='left',padx=10)
+                    row_progress.pack(side='left')
                     row_progress['value'] += 100 / sheet.nrows
                     self.parent.update_idletasks()
                     time.sleep(0.01)
@@ -61,13 +60,17 @@ class App:
                             new_data = data.replace('/', "_")
                             current_row.append(new_data)
                     all_data.append(current_row)
-
-                # inside_catia(all_data)
-                print(all_data)
-                return filename
+                if not len(all_data):
+                    messagebox.showerror('Error!',f"{filename} is empty.")
+                    self.excel_file()
+                else:        
+                    upload_progress.config(text='File uploaded successfully.', fg='green')
+                    row_progress.destroy()
+                    print(all_data)
+                    return all_data
 
             else:
-                messagebox.showerror('Error!',f"{filename} is not an excel file.")
+                messagebox.showerror('Error!',f"{filename} is not an Excel file.")
                 self.excel_file()
 
 def main():
