@@ -12,9 +12,9 @@ class App:
     def __init__(self,parent):
         self.parent = parent
         self.frame = Frame(parent).place(relwidth=1,relheight=1)
-        self.upload_label = Label(self.frame,text="Upload Excel file.",font=("Helvetica", 15))
+        self.upload_label = Label(self.frame,text="Upload Excel file.",font=("Helvetica", 13))
         self.upload_label.place(x=10,y=10)
-        self.upload_button = Button(self.frame,text="Upload",font=("Helvetica", 15),command = self.excel_file)
+        self.upload_button = Button(self.frame,text="Upload",font=("Helvetica", 13),command = self.destroy_widget)
         self.upload_button.place(width=180,height=50,x=10,y=50)
 
     def inside_catia(self,data):
@@ -25,13 +25,16 @@ class App:
         except ImageNotFoundException:
             print("Catia not opened.")  
 
+    def destroy_widget(self):
+        self.upload_label.destroy()
+        self.upload_button.destroy()
+        self.excel_file()
+
     def excel_file(self):
         filepath = filedialog.askopenfilename(initialdir="/Desktop",title='Select File',filetypes=[("Excel files", ".xlsx .xls .csv")])
         filename = ntpath.basename(filepath)
-        self.upload_label.destroy()
-        self.upload_button.destroy()
         if filename.endswith(('.xlsx', '.xls', '.csv')):
-            upload_progress = Label(self.frame,text="File uploading",font=("Helvetica", 15))
+            upload_progress = Label(self.frame,text="File uploading",font=("Helvetica", 13))
             upload_progress.pack(side='left',padx=10)
             row_progress = ttk.Progressbar(self.frame,orient= HORIZONTAL,length=300,mode="determinate")
             row_progress.pack(side='left')
@@ -47,7 +50,7 @@ class App:
                 current_row = []
                 row_progress['value'] += 100 / sheet.nrows
                 self.parent.update_idletasks()
-                time.sleep(0.001)
+                time.sleep(0.01)
                 for col in range(sheet.ncols):
                     if col == 1 or col == 3:
                         data = sheet.cell_value(row, col)
