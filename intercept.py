@@ -6,7 +6,7 @@ from pyscreeze import ImageNotFoundException
 from tkinter import *
 from tkinter import ttk,filedialog,messagebox
 
-class App:
+class FileView:
 
     def __init__(self,parent):
         self.parent = parent
@@ -32,7 +32,7 @@ class App:
     def excel_file(self):
         filepath = filedialog.askopenfilename(initialdir="/Desktop",title='Select File',filetypes=[("Excel files", ".xlsx .xls .csv")])
         if not filepath:
-            App(app)
+            FileView(app)
         else:
             filename = ntpath.basename(filepath)
             if filename.lower().endswith(('.xlsx', '.xls', '.csv')):
@@ -79,7 +79,7 @@ def main():
     app.wm_iconbitmap('images/intercept.ico')
     app.wm_title('INTERCEPT')
     app.geometry("600x120")
-    application = App(app)
+    application = FileView(app)
     app.mainloop()
 
 if __name__ == "__main__":
