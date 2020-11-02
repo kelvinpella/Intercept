@@ -30,8 +30,11 @@ class FileView:
     def notice(self):
         self.parent.geometry("600x200")
         notice = Message(
-            self.frame,font=("Helvetica", 10), text="IMPORTANT NOTICE.\n-Make sure required 3D is open in Catia Composer.\n-Make sure no other apps block Catia Composer's screen.\n-Click 'OK' to continue.")
-        notice.pack(side='left')
+            self.frame,width=600,font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Click 'OK' to continue.")
+        notice.place(x=10,y=10)
+        ok_button = Button(self.frame,text='Ok',font=("Helvetica", 13))
+        ok_button.place(x=10,y=150)
+        # TO DO create (don't show again)
 
     def destroy_widget(self):
         self.upload_label.destroy()
