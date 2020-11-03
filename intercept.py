@@ -27,14 +27,29 @@ class FileView:
         except ImageNotFoundException:
             print("Catia not opened.")
 
+    def toCatia(self):
+        notice.destroy()
+        notice_button.destroy()
+        self.parent.geometry("650x200")
+        self.parent.resizable(False, False)
+        new_notice_label = Label(self.frame,text="Program running...",fg="green",font=("Helvetica", 13))
+        new_notice_label.place(x=10,y=10)
+        new_notice_message = Message(
+            self.frame,width=600,font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- You can cancel the program anytime.\n")
+        new_notice_message.place(x=10,y=50)
+        new_notice_button = Button(self.frame,text='Cancel',font=("Helvetica", 13))
+        new_notice_button.place(x=450,y=150)
+
     def notice(self):
+        global notice
+        global notice_button
         self.parent.geometry("600x200")
+        self.parent.resizable(False, False)
         notice = Message(
             self.frame,width=600,font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Click 'OK' to continue.")
         notice.place(x=10,y=10)
-        ok_button = Button(self.frame,text='Ok',font=("Helvetica", 13))
-        ok_button.place(x=10,y=150)
-        # TO DO create (don't show again)
+        notice_button = Button(self.frame,text='Ok',font=("Helvetica", 13),command=self.toCatia)
+        notice_button.place(x=450,y=150)
 
     def destroy_widget(self):
         self.upload_label.destroy()
@@ -94,6 +109,7 @@ class FileView:
 def main():
     global app
     app = Tk()
+    app.resizable(False, False)
     app.wm_iconbitmap('images/intercept.ico')
     app.wm_title('INTERCEPT')
     app.geometry("600x120")
