@@ -35,7 +35,6 @@ class App:
         notice.destroy()
         notice_button.destroy()
         self.parent.geometry("650x200")
-        self.parent.resizable(False, False)
         new_notice_label = Label(
             self.frame, text="Program running...", fg="green", font=("Helvetica", 13))
         new_notice_label.place(x=10, y=10)
@@ -56,7 +55,6 @@ class App:
         global notice
         global notice_button
         self.parent.geometry("600x200")
-        self.parent.resizable(False, False)
         notice = Message(
             self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Click 'OK' to continue.")
         notice.place(x=10, y=10)
@@ -126,10 +124,19 @@ class App:
 def main():
     global app
     app = Tk()
+    # Place window slightly above the center of screen on start up
+    width_window = 600
+    height_window = 120
+    screen_width = app.winfo_screenwidth() # width of the screen
+    screen_height = app.winfo_screenheight() # height of the screen
+    x_center = (screen_width/2)-(width_window/2)
+    y_center = (screen_height/2)-(height_window/2)
+    x = x_center
+    y = (y_center/8)
     app.resizable(False, False)
     app.wm_iconbitmap('images/intercept.ico')
     app.wm_title('INTERCEPT')
-    app.geometry("600x120")
+    app.geometry('%dx%d+%d+%d' % (width_window,height_window,x,y))
     application = App(app)
     app.wm_protocol("WM_DELETE_WINDOW", App.onClosing)
     app.mainloop()
