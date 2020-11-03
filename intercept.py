@@ -27,6 +27,10 @@ class FileView:
         except ImageNotFoundException:
             print("Catia not opened.")
 
+    def cancelOperation(self):
+        if messagebox.askokcancel("Cancel", "This operation will be cancelled."):
+            FileView(app)
+
     def toCatia(self):
         notice.destroy()
         notice_button.destroy()
@@ -39,7 +43,7 @@ class FileView:
             self.frame, width=600, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- You can cancel anytime.\n")
         new_notice_message.place(x=10, y=50)
         new_notice_button = Button(
-            self.frame, text='Cancel', font=("Helvetica", 13))
+            self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
         new_notice_button.place(x=500, y=150)
         new_notice_progressText = Label(
             self.frame, text="Status", font=("Helvetica", 13))
@@ -114,6 +118,10 @@ class FileView:
                     'Error!', f"{filename} is not an Excel file.")
                 self.excel_file()
 
+    def onClosing():
+        if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
+            app.destroy()
+
 
 def main():
     global app
@@ -123,6 +131,7 @@ def main():
     app.wm_title('INTERCEPT')
     app.geometry("600x120")
     application = FileView(app)
+    app.wm_protocol("WM_DELETE_WINDOW", FileView.onClosing)
     app.mainloop()
 
 
