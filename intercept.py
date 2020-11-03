@@ -7,7 +7,7 @@ from tkinter import *
 from tkinter import ttk, filedialog, messagebox
 
 
-class FileView:
+class App:
 
     def __init__(self, parent):
         self.parent = parent
@@ -29,7 +29,7 @@ class FileView:
 
     def cancelOperation(self):
         if messagebox.askokcancel("Cancel", "This operation will be cancelled."):
-            FileView(app)
+            App(app)
 
     def toCatia(self):
         notice.destroy()
@@ -73,7 +73,7 @@ class FileView:
         filepath = filedialog.askopenfilename(
             initialdir="/Desktop", title='Select File', filetypes=[("Excel files", ".xlsx .xls .csv")])
         if not filepath:
-            FileView(app)
+            App(app)
         else:
             filename = ntpath.basename(filepath)
             if filename.lower().endswith(('.xlsx', '.xls', '.csv')):
@@ -130,8 +130,8 @@ def main():
     app.wm_iconbitmap('images/intercept.ico')
     app.wm_title('INTERCEPT')
     app.geometry("600x120")
-    application = FileView(app)
-    app.wm_protocol("WM_DELETE_WINDOW", FileView.onClosing)
+    application = App(app)
+    app.wm_protocol("WM_DELETE_WINDOW", App.onClosing)
     app.mainloop()
 
 
