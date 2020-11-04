@@ -17,7 +17,7 @@ class App:
         self.upload_label.place(x=10, y=10)
         self.upload_button = Button(self.frame, text="Upload", font=(
             "Helvetica", 13), command=self.destroy_widget)
-        self.upload_button.place(width=180, height=50, x=10, y=50)
+        self.upload_button.place(width=180, height=50, x=10, y=60)
 
     def inside_catia(self, data):
         # check if catia document is opened
@@ -29,6 +29,7 @@ class App:
 
     def cancelOperation(self):
         if messagebox.askokcancel("Cancel", "This operation will be cancelled."):
+            self.parent.geometry("600x120")
             App(app)
 
     def toCatia(self):
@@ -54,27 +55,33 @@ class App:
     def notice(self):
         global notice
         global notice_button
-        self.parent.geometry("600x200")
+        upload_progress.destroy()
+        self.parent.geometry("650x250")
         notice = Message(
-            self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Click 'OK' to continue.")
+            self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Remember to place this window near the top of the screen.\n- Click 'OK' to continue.")
         notice.place(x=10, y=10)
         notice_button = Button(self.frame, text='Ok', font=(
             "Helvetica", 13), command=self.toCatia)
-        notice_button.place(x=450, y=150)
+        notice_button.place(x=450, y=200)
 
     def destroy_widget(self):
         self.upload_label.destroy()
         self.upload_button.destroy()
-        self.excel_file()
+        file_label = Label(self.frame,anchor = 'w',width = 600,height = 120,text="Select an excel file from your computer.",font=("Helvetica", 13))
+        file_label.pack(side='left',padx=10)
+        self.excel_file(file_label)
 
-    def excel_file(self):
+    def excel_file(self,label):
         filepath = filedialog.askopenfilename(
-            initialdir="/Desktop", title='Select File', filetypes=[("Excel files", ".xlsx .xls .csv")])
+            initialdir="/Desktop", title='Select File',filetypes=[("Excel files", ".xlsx .xls .csv")])
         if not filepath:
+            label.destroy()
             App(app)
         else:
+            label.destroy()
             filename = ntpath.basename(filepath)
             if filename.lower().endswith(('.xlsx', '.xls', '.csv')):
+                global upload_progress
                 upload_progress = Label(
                     self.frame, text="File uploading", font=("Helvetica", 13))
                 row_progress = ttk.Progressbar(
@@ -102,19 +109,30 @@ class App:
                             current_row.append(new_data)
                     all_data.append(current_row)
                 if not len(all_data):
-                    messagebox.showerror('Error!', f"{filename} is empty.")
-                    self.excel_file()
+                    empty_label = Label(self.frame,text="This file is empty.",fg='red',font=("Helvetica", 13))
+                    empty_label.pack(side='left', padx=10)
+                    response = messagebox.showerror('Error!', f"{filename} is empty.")
+                    if response == 'ok':
+                        empty_label.destroy()
+                        different_file_label = Label(self.frame,text="Try a different excel file.",font=("Helvetica", 13))
+                        different_file_label.pack(side='left', padx=10)
+                        self.excel_file(different_file_label)
                 else:
                     row_progress.destroy()
-                    upload_progress.destroy()
+                    upload_progress.config(text="File uploaded successfully.",fg='green')
                     messagebox.showinfo(
                         'Success', 'FILE UPLOADED\n\nClick "OK" to continue.')
                     self.notice()
 
             else:
-                messagebox.showerror(
-                    'Error!', f"{filename} is not an Excel file.")
-                self.excel_file()
+                not_excel_label = Label(self.frame,text="Upload Excel files only.",fg='red',font=("Helvetica", 13))
+                not_excel_label.pack(side='left', padx=10)
+                not_excel= messagebox.showerror('Error!', f"{filename} is not an Excel file.")
+                if not_excel == 'ok':
+                    not_excel_label.destroy()
+                    different_file_label = Label(self.frame,text="Try a different excel file.",font=("Helvetica", 13))
+                    different_file_label.pack(side='left', padx=10)
+                    self.excel_file(different_file_label)
 
     def onClosing():
         if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
