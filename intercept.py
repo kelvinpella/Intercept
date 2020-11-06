@@ -2,7 +2,6 @@ import xlrd
 import time
 import ntpath
 import pyautogui
-from pyscreeze import ImageNotFoundException
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
 
@@ -19,13 +18,16 @@ class App:
             "Helvetica", 13), command=self.destroy_widget)
         self.upload_button.place(width=180, height=50, x=10, y=60)
 
-    def inside_catia(self, data):
+    def catiaOpen(self):
+        time.sleep(2)
         # check if catia document is opened
-        try:
-            axis = pyautogui.locateCenterOnScreen('images/catia.PNG')
+        axis = pyautogui.locateCenterOnScreen('images/catia.PNG')
+        if axis is not None:
             print(axis)
-        except ImageNotFoundException:
-            print("Catia not opened.")
+            pyautogui.moveTo(12, 15)
+            # catiaOpen = messagebox.askyesno("catia","Catia is opened.")  
+        else:
+            catiaNotOpen = messagebox.showwarning("Warning!", "Looks like Catia is not opened.\n Continue anyway?")    
 
     def cancelOperation(self):
         if messagebox.askokcancel("Cancel", "This operation will be cancelled."):
@@ -51,6 +53,8 @@ class App:
         new_notice_progressBar = ttk.Progressbar(
             self.frame, orient=HORIZONTAL, length=300, mode="determinate")
         new_notice_progressBar.place(x=100, y=125)
+        self.parent.update_idletasks()
+        self.catiaOpen()
 
     def notice(self):
         global notice
@@ -67,13 +71,14 @@ class App:
     def destroy_widget(self):
         self.upload_label.destroy()
         self.upload_button.destroy()
-        file_label = Label(self.frame,anchor = 'w',width = 600,height = 120,text="Select an excel file from your computer.",font=("Helvetica", 13))
-        file_label.pack(side='left',padx=10)
+        file_label = Label(self.frame, anchor='w', width=600, height=120,
+                           text="Select an excel file from your computer.", font=("Helvetica", 13))
+        file_label.pack(side='left', padx=10)
         self.excel_file(file_label)
 
-    def excel_file(self,label):
+    def excel_file(self, label):
         filepath = filedialog.askopenfilename(
-            initialdir="/Desktop", title='Select File',filetypes=[("Excel files", ".xlsx .xls .csv")])
+            initialdir="/Desktop", title='Select File', filetypes=[("Excel files", ".xlsx .xls .csv")])
         if not filepath:
             label.destroy()
             App(app)
@@ -109,28 +114,35 @@ class App:
                             current_row.append(new_data)
                     all_data.append(current_row)
                 if not len(all_data):
-                    empty_label = Label(self.frame,text="This file is empty.",fg='red',font=("Helvetica", 13))
+                    empty_label = Label(
+                        self.frame, text="This file is empty.", fg='red', font=("Helvetica", 13))
                     empty_label.pack(side='left', padx=10)
-                    response = messagebox.showerror('Error!', f"{filename} is empty.")
+                    response = messagebox.showerror(
+                        'Error!', f"{filename} is empty.")
                     if response == 'ok':
                         empty_label.destroy()
-                        different_file_label = Label(self.frame,text="Try a different excel file.",font=("Helvetica", 13))
+                        different_file_label = Label(
+                            self.frame, text="Try a different excel file.", font=("Helvetica", 13))
                         different_file_label.pack(side='left', padx=10)
                         self.excel_file(different_file_label)
                 else:
                     row_progress.destroy()
-                    upload_progress.config(text="File uploaded successfully.",fg='green')
+                    upload_progress.config(
+                        text="File uploaded successfully.", fg='green')
                     messagebox.showinfo(
                         'Success', 'FILE UPLOADED\n\nClick "OK" to continue.')
                     self.notice()
 
             else:
-                not_excel_label = Label(self.frame,text="Upload Excel files only.",fg='red',font=("Helvetica", 13))
+                not_excel_label = Label(
+                    self.frame, text="Upload Excel files only.", fg='red', font=("Helvetica", 13))
                 not_excel_label.pack(side='left', padx=10)
-                not_excel= messagebox.showerror('Error!', f"{filename} is not an Excel file.")
+                not_excel = messagebox.showerror(
+                    'Error!', f"{filename} is not an Excel file.")
                 if not_excel == 'ok':
                     not_excel_label.destroy()
-                    different_file_label = Label(self.frame,text="Try a different excel file.",font=("Helvetica", 13))
+                    different_file_label = Label(
+                        self.frame, text="Try a different excel file.", font=("Helvetica", 13))
                     different_file_label.pack(side='left', padx=10)
                     self.excel_file(different_file_label)
 
@@ -145,8 +157,8 @@ def main():
     # Place window slightly above the center of screen on start up
     width_window = 600
     height_window = 120
-    screen_width = app.winfo_screenwidth() # width of the screen
-    screen_height = app.winfo_screenheight() # height of the screen
+    screen_width = app.winfo_screenwidth()  # width of the screen
+    screen_height = app.winfo_screenheight()  # height of the screen
     x_center = (screen_width/2)-(width_window/2)
     y_center = (screen_height/2)-(height_window/2)
     x = x_center
@@ -154,7 +166,7 @@ def main():
     app.resizable(False, False)
     app.wm_iconbitmap('images/intercept.ico')
     app.wm_title('INTERCEPT')
-    app.geometry('%dx%d+%d+%d' % (width_window,height_window,x,y))
+    app.geometry('%dx%d+%d+%d' % (width_window, height_window, x, y))
     application = App(app)
     app.wm_protocol("WM_DELETE_WINDOW", App.onClosing)
     app.mainloop()
