@@ -4,6 +4,7 @@ import ntpath
 import pyautogui
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
+import pyperclip as pc
 
 
 class App:
@@ -17,17 +18,84 @@ class App:
         self.upload_button = Button(self.frame, text="Upload", font=(
             "Helvetica", 13), command=self.destroy_widget)
         self.upload_button.place(width=180, height=50, x=10, y=60)
+    # def searchPartcode(self):
+    #     time.sleep(1.5)
+
+    def retryCatia(self):
+        time.sleep(1)
+        thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
+        thumbnail = pyautogui.locateCenterOnScreen('images/thumbnail.png')
+        if thumb or thumbnail is not None:
+            pyautogui.moveTo(thumb[0], thumb[1])
+            pyautogui.moveTo(thumbnail[0], thumbnail[1])
+            pyautogui.moveRel(0, 100)
+            pyautogui.click()
+            self.catiaOpen()
+        else:
+            if messagebox.askretrycancel("Failed", 'Either Catia/3D is blocked or not open.\n Place program\'s window near top center.'):
+                # will go to find search
+                searchy = pyautogui.locateCenterOnScreen('images/searchy.png')
+                if searchy is not None:
+                    pyautogui.moveTo(searchy[0], searchy[1])
+                    pyautogui.click()
+                    self.catiaOpen()
+                else:
+                    pyautogui.moveTo(screen_width/2, screen_height/2)
+                    pyautogui.click()
+                    time.sleep(1)
+                    self.catiaOpen()
+            else:
+                self.notice()
 
     def catiaOpen(self):
         time.sleep(2)
-        # check if catia document is opened
-        axis = pyautogui.locateCenterOnScreen('images/catia.PNG')
-        if axis is not None:
-            print(axis)
-            pyautogui.moveTo(12, 15)
-            # catiaOpen = messagebox.askyesno("catia","Catia is opened.")  
+        catia = pyautogui.locateCenterOnScreen('images/catia.png')
+        if catia is not None:
+            # check if catia document is opened.
+            thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
+            thumbnail = pyautogui.locateCenterOnScreen('images/thumbnail.png')
+            if thumb or thumbnail is not None:
+                # will go to find search
+                searchy = pyautogui.locateCenterOnScreen('images/searchy.png')
+                if searchy is not None:
+                    pyautogui.moveTo(searchy[0], searchy[1])
+                    pyautogui.click()
+                    pyautogui.moveRel(100, 0)
+                    pyautogui.click()
+                    pyautogui.hotkey('ctrl', 'a')
+                    pyautogui.press('backspace')
+                    # self.searchPartcode()
+                else:
+                    pyautogui.moveTo(catia[0], catia[1])
+                    pyautogui.click()
+                    pyautogui.moveRel(200, 0)
+                    pyautogui.click()
+                    pyautogui.hotkey('ctrl', 'f')
+                    pyautogui.hotkey('ctrl', 'a')
+                    pyautogui.press('backspace')
+                    # self.searchPartcode()
+            else:
+                if messagebox.askretrycancel("Failed!", '3D is either blocked or not opened.\n Check it before retrying.'):
+                    # will go to find search
+                    searchy = pyautogui.locateCenterOnScreen(
+                        'images/searchy.png')
+                    if searchy is not None:
+                        pyautogui.moveTo(searchy[0], searchy[1])
+                        pyautogui.click()
+                        self.catiaOpen()
+                    else:
+                        pyautogui.moveTo(catia[0], catia[1])
+                        pyautogui.click()
+                        pyautogui.moveRel(200, 0)
+                        pyautogui.click()
+                        self.catiaOpen()
+                else:
+                    new_notice_button.destroy()
+                    new_notice_label.destroy()
+                    new_notice_message.destroy()
+                    self.notice()
         else:
-            catiaNotOpen = messagebox.showwarning("Warning!", "Looks like Catia is not opened.\n Continue anyway?")    
+            self.retryCatia()
 
     def cancelOperation(self):
         if messagebox.askokcancel("Cancel", "This operation will be cancelled."):
@@ -35,6 +103,9 @@ class App:
             App(app)
 
     def toCatia(self):
+        global new_notice_button
+        global new_notice_label
+        global new_notice_message
         notice.destroy()
         notice_button.destroy()
         self.parent.geometry("650x200")
@@ -153,6 +224,8 @@ class App:
 
 def main():
     global app
+    global screen_width
+    global screen_height
     app = Tk()
     # Place window slightly above the center of screen on start up
     width_window = 600
