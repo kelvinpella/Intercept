@@ -32,7 +32,7 @@ class App:
             pyautogui.click()
             self.catiaOpen()
         else:
-            if messagebox.askretrycancel("Failed", 'Either Catia/3D is blocked or not open.\n Place program\'s window near top center.'):
+            if messagebox.askretrycancel("Failed", 'Either Catia/3D is blocked or not open.\n Place this program\'s window near top center.'):
                 # will go to find search
                 searchy = pyautogui.locateCenterOnScreen('images/searchy.png')
                 if searchy is not None:
@@ -40,11 +40,14 @@ class App:
                     pyautogui.click()
                     self.catiaOpen()
                 else:
-                    pyautogui.moveTo(screen_width/2, screen_height/2)
+                    pyautogui.moveTo(x, y/8)
+                    pyautogui.moveRel(50,0)
                     pyautogui.click()
-                    time.sleep(1)
                     self.catiaOpen()
             else:
+                new_notice_button.destroy()
+                new_notice_label.destroy()
+                new_notice_message.destroy()
                 self.notice()
 
     def catiaOpen(self):
@@ -224,8 +227,8 @@ class App:
 
 def main():
     global app
-    global screen_width
-    global screen_height
+    global x
+    global y
     app = Tk()
     # Place window slightly above the center of screen on start up
     width_window = 600
