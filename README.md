@@ -1,2 +1,2 @@
 # INTERCEPT 
-The program is to be used to read and extract data values(PartCodes and Position Numbers) from excel sheets. Then it searches for elements in Catia composer using the PartCodes and assigns respective Position Numbers.
+This program will be used to read and extract data values(Partcodes and positions) automatically from excel sheets. Then, the Partcodes will be used to search for matching elements in Catia composer and assign respective position numbers. es 
