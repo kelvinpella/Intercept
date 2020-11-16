@@ -18,11 +18,50 @@ class App:
         self.upload_button = Button(self.frame, text="Upload", font=(
             "Helvetica", 13), command=self.destroy_widget)
         self.upload_button.place(width=180, height=50, x=10, y=60)
-    # def searchPartcode(self):
-    #     time.sleep(1.5)
+
+    def searchPartcode(self):
+        data = all_data
+        # remove partcode and pos text in first list
+        data.pop(0)
+        # search for partcodes
+        for item in data:
+            pyautogui.write(item[1])
+            # will go to find searchAll
+            searchall = pyautogui.locateCenterOnScreen('images/searchall.png')
+            if searchall is not None:
+                pyautogui.moveTo(searchall[0], searchall[1])
+                pyautogui.click()
+                time.sleep(1)
+                pyautogui.moveTo(screen_width/2, screen_height/2) ## Needs recheck
+                pyautogui.click()
+                pyautogui.hotkey('ctrl','z')
+                time.sleep(0.5)
+                bom = pyautogui.locateCenterOnScreen('images/bom.png')
+                if bom is not None:
+                    pyautogui.moveTo(bom[0], bom[1])
+                    pyautogui.moveRel(150,0)
+                    pyautogui.click()
+                    # check if there is any position already
+                    pyautogui.hotkey('ctrl','a')
+                    pyautogui.hotkey('ctrl','c')
+                    time.sleep(.01)
+                    print(pc.paste())
+                    # TODO SPECIAL ATTENTION
+                    # self.catiaOpen()
+                else:
+                    messagebox.showinfo('tittle',"cant see bom")
+                    # pyautogui.moveTo(x, y/8)
+                    # pyautogui.moveRel(50,0)
+                    # pyautogui.click()
+                    # self.catiaOpen()
+            else:
+                messagebox.showinfo('tittle',"cant see search all")
+                # pyautogui.moveTo(x, y/8)
+                # pyautogui.moveRel(50,0)
+                # pyautogui.click()
+                # self.catiaOpen()
 
     def retryCatia(self):
-        time.sleep(1)
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
         thumbnail = pyautogui.locateCenterOnScreen('images/thumbnail.png')
         if thumb or thumbnail is not None:
@@ -32,7 +71,7 @@ class App:
             pyautogui.click()
             self.catiaOpen()
         else:
-            if messagebox.askretrycancel("Failed", 'Either Catia/3D is blocked or not open.\n Place this program\'s window near top center.'):
+            if messagebox.askretrycancel("Failed", 'Catia/3D is either blocked or not opened.\n Place this program\'s window near top center.'):
                 # will go to find search
                 searchy = pyautogui.locateCenterOnScreen('images/searchy.png')
                 if searchy is not None:
@@ -48,10 +87,11 @@ class App:
                 new_notice_button.destroy()
                 new_notice_label.destroy()
                 new_notice_message.destroy()
+                new_error_button.destroy()
+                new_warning_button.destroy()
                 self.notice()
 
     def catiaOpen(self):
-        time.sleep(2)
         catia = pyautogui.locateCenterOnScreen('images/catia.png')
         if catia is not None:
             # check if catia document is opened.
@@ -67,7 +107,7 @@ class App:
                     pyautogui.click()
                     pyautogui.hotkey('ctrl', 'a')
                     pyautogui.press('backspace')
-                    # self.searchPartcode()
+                    self.searchPartcode()
                 else:
                     pyautogui.moveTo(catia[0], catia[1])
                     pyautogui.click()
@@ -76,7 +116,7 @@ class App:
                     pyautogui.hotkey('ctrl', 'f')
                     pyautogui.hotkey('ctrl', 'a')
                     pyautogui.press('backspace')
-                    # self.searchPartcode()
+                    self.searchPartcode()
             else:
                 if messagebox.askretrycancel("Failed!", '3D is either blocked or not opened.\n Check it before retrying.'):
                     # will go to find search
@@ -96,6 +136,8 @@ class App:
                     new_notice_button.destroy()
                     new_notice_label.destroy()
                     new_notice_message.destroy()
+                    new_error_button.destroy()
+                    new_warning_button.destroy()
                     self.notice()
         else:
             self.retryCatia()
@@ -109,26 +151,33 @@ class App:
         global new_notice_button
         global new_notice_label
         global new_notice_message
+        global new_error_button
+        global new_warning_button
         notice.destroy()
         notice_button.destroy()
-        self.parent.geometry("650x200")
+        self.parent.geometry("650x250")
         new_notice_label = Label(
             self.frame, text="Program running...", fg="green", font=("Helvetica", 13))
         new_notice_label.place(x=10, y=10)
         new_notice_message = Message(
-            self.frame, width=600, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- You can cancel anytime.\n")
+            self.frame, width=650,font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- You can cancel anytime.\n")
         new_notice_message.place(x=10, y=50)
+        new_warning_button = Button(
+            self.frame, text='Warnings', font=("Helvetica", 13))
+        new_warning_button.place(x=10,y=180)
+        new_error_button = Button(
+            self.frame, text='Errors', font=("Helvetica", 13))
+        new_error_button.place(x=170,y=180)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
-        new_notice_button.place(x=500, y=150)
+        new_notice_button.place(x=500, y=180)
         new_notice_progressText = Label(
             self.frame, text="Status", font=("Helvetica", 13))
-        new_notice_progressText.place(x=10, y=120)
+        new_notice_progressText.place(x=10, y=125)
         new_notice_progressBar = ttk.Progressbar(
             self.frame, orient=HORIZONTAL, length=300, mode="determinate")
-        new_notice_progressBar.place(x=100, y=125)
-        self.parent.update_idletasks()
-        self.catiaOpen()
+        new_notice_progressBar.place(x=100, y=130)
+        self.parent.after(2000,lambda:self.catiaOpen())
 
     def notice(self):
         global notice
@@ -170,6 +219,7 @@ class App:
                 sheet = workbook.sheet_by_index(0)
 
                 # Stores Position and Partcode value pairs from all rows.
+                global all_data
                 all_data = []
 
                 # loop over rows and columns to extract Position and Partcode pairs
@@ -229,6 +279,8 @@ def main():
     global app
     global x
     global y
+    global screen_height
+    global screen_width
     app = Tk()
     # Place window slightly above the center of screen on start up
     width_window = 600
