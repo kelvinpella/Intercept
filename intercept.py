@@ -4,7 +4,7 @@ import ntpath
 import pyautogui
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
-import pyperclip as pc
+import pyperclip
 
 
 class App:
@@ -19,47 +19,125 @@ class App:
             "Helvetica", 13), command=self.destroy_widget)
         self.upload_button.place(width=180, height=50, x=10, y=60)
 
+    def searchAll(self, position):
+        # will go to find searchAll
+        searchall = pyautogui.locateCenterOnScreen('images/searchall.png')
+        if searchall is not None:
+            pyautogui.moveTo(searchall[0], searchall[1])
+            pyautogui.click()
+            time.sleep(1)
+            pyautogui.moveTo(screen_width/2, screen_height/2)  # Needs recheck
+            pyautogui.click()
+            pyautogui.hotkey('ctrl', 'z')
+            time.sleep(0.5)
+            bom = pyautogui.locateCenterOnScreen('images/bom.png')
+            if bom is not None:
+                pyperclip.copy('')
+                pyautogui.moveTo(bom[0], bom[1])
+                pyautogui.moveRel(150, 0)
+                pyautogui.click()
+                # check if there is any position already
+                pyautogui.hotkey('ctrl', 'a')
+                pyautogui.hotkey('ctrl', 'c')
+                time.sleep(.01)
+                existing = str(pyperclip.paste())
+                time.sleep(.01)
+                print(existing)
+                # For empty field value
+                if len(existing) == 0 and len(position[0]) != 0:
+                    # check if incoming value has no decimal point
+                    if position[0].count('.') == 0:
+                        pyautogui.press('backspace')
+                        pyautogui.write(position[0])
+                    else:
+                        pyautogui.press('backspace')
+                        pyautogui.write(position[0])
+                        print('Child with no parent')  # TODO warn
+                # For fields with data
+                elif len(existing) != 0 and len(position[0]) != 0:
+                    if existing.count('.') == 0:
+                        # check if both field value and incoming value has no decimal point
+                        if position[0].count('.') == 0:
+                            if existing == position[0]:
+                                pyautogui.press('backspace')
+                                pyautogui.write(position[0])
+                            else:
+                                # TODO
+                                print(
+                                    'Existing value is different from incoming value.')
+                        else:
+                            # check if field value has no decimal point but incoming value has
+                            if existing == position[0][0]:
+                                pyautogui.press('backspace')
+                                pyautogui.write(position[0])
+                            else:
+                                print('parent not found')  # TODO skip
+                    else:
+                        # check if field value has decimal point but incoming value doesn't
+                        # never overwrite any child *
+                        if position[0].count('.') == 0:
+                            # TODO skip
+                            print('Could not overwrite child by parent.')
+                        else:
+                            # check if both field value and incoming value has decimal point
+                            if existing == position[0]:
+                                pyautogui.press('backspace')
+                                pyautogui.write(position[0])
+                            else:
+                                # TODO skip
+                                print(
+                                    'Could not overwrite child by a different child')
+                else:
+                    print('Found null value position number from excel.')
+            else:
+                messagebox.showinfo('tittle', "cant see bom")
+                # pyautogui.moveTo(x, y/8)
+                # pyautogui.moveRel(50,0)
+                # pyautogui.click()
+                # self.catiaOpen()
+        else:
+            messagebox.showinfo('tittle', "cant see search all")
+            # pyautogui.moveTo(x, y/8)
+            # pyautogui.moveRel(50,0)
+            # pyautogui.click()
+            # self.catiaOpen()
+
     def searchPartcode(self):
         data = all_data
         # remove partcode and pos text in first list
         data.pop(0)
         # search for partcodes
         for item in data:
-            pyautogui.write(item[1])
-            # will go to find searchAll
-            searchall = pyautogui.locateCenterOnScreen('images/searchall.png')
-            if searchall is not None:
-                pyautogui.moveTo(searchall[0], searchall[1])
-                pyautogui.click()
-                time.sleep(1)
-                pyautogui.moveTo(screen_width/2, screen_height/2) ## Needs recheck
-                pyautogui.click()
-                pyautogui.hotkey('ctrl','z')
-                time.sleep(0.5)
-                bom = pyautogui.locateCenterOnScreen('images/bom.png')
-                if bom is not None:
-                    pyautogui.moveTo(bom[0], bom[1])
-                    pyautogui.moveRel(150,0)
-                    pyautogui.click()
-                    # check if there is any position already
-                    pyautogui.hotkey('ctrl','a')
-                    pyautogui.hotkey('ctrl','c')
-                    time.sleep(.01)
-                    print(pc.paste())
-                    # TODO SPECIAL ATTENTION
-                    # self.catiaOpen()
+            # Check if values are not empty
+            if item[0] != '' and item[1] != '':
+                # Check if given position 1st or 2nd generation only
+                if item[0].count('.') <= 1:
+                    # will go to find search
+                    searchy = pyautogui.locateCenterOnScreen(
+                        'images/searchy.png')
+                    if searchy is not None:
+                        pyautogui.moveTo(searchy[0], searchy[1])
+                        pyautogui.click()
+                        pyautogui.moveRel(100, 0)
+                        pyautogui.click()
+                        pyautogui.hotkey('ctrl', 'a')
+                        pyautogui.press('backspace')
+                        pyautogui.write(item[1])
+                        self.searchAll(item)
+                    else:
+                        # Needs recheck
+                        pyautogui.moveTo(screen_width/2, screen_height/2)
+                        pyautogui.click()
+                        pyautogui.hotkey('ctrl', 'f')
+                        pyautogui.hotkey('ctrl', 'a')
+                        pyautogui.press('backspace')
+                        pyautogui.write(item[1])
+                        self.searchAll(item)
+
                 else:
-                    messagebox.showinfo('tittle',"cant see bom")
-                    # pyautogui.moveTo(x, y/8)
-                    # pyautogui.moveRel(50,0)
-                    # pyautogui.click()
-                    # self.catiaOpen()
+                    print(f'{item[0]} is outsided range.')  # TODO
             else:
-                messagebox.showinfo('tittle',"cant see search all")
-                # pyautogui.moveTo(x, y/8)
-                # pyautogui.moveRel(50,0)
-                # pyautogui.click()
-                # self.catiaOpen()
+                print(f'{item[0]} or {item[1]} is empty.')  # TODO
 
     def retryCatia(self):
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
@@ -79,8 +157,8 @@ class App:
                     pyautogui.click()
                     self.catiaOpen()
                 else:
-                    pyautogui.moveTo(x, y/8)
-                    pyautogui.moveRel(50,0)
+                    # Needs recheck
+                    pyautogui.moveTo(screen_width/2, screen_height/2)
                     pyautogui.click()
                     self.catiaOpen()
             else:
@@ -98,25 +176,7 @@ class App:
             thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
             thumbnail = pyautogui.locateCenterOnScreen('images/thumbnail.png')
             if thumb or thumbnail is not None:
-                # will go to find search
-                searchy = pyautogui.locateCenterOnScreen('images/searchy.png')
-                if searchy is not None:
-                    pyautogui.moveTo(searchy[0], searchy[1])
-                    pyautogui.click()
-                    pyautogui.moveRel(100, 0)
-                    pyautogui.click()
-                    pyautogui.hotkey('ctrl', 'a')
-                    pyautogui.press('backspace')
-                    self.searchPartcode()
-                else:
-                    pyautogui.moveTo(catia[0], catia[1])
-                    pyautogui.click()
-                    pyautogui.moveRel(200, 0)
-                    pyautogui.click()
-                    pyautogui.hotkey('ctrl', 'f')
-                    pyautogui.hotkey('ctrl', 'a')
-                    pyautogui.press('backspace')
-                    self.searchPartcode()
+                self.searchPartcode()
             else:
                 if messagebox.askretrycancel("Failed!", '3D is either blocked or not opened.\n Check it before retrying.'):
                     # will go to find search
@@ -160,14 +220,14 @@ class App:
             self.frame, text="Program running...", fg="green", font=("Helvetica", 13))
         new_notice_label.place(x=10, y=10)
         new_notice_message = Message(
-            self.frame, width=650,font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- You can cancel anytime.\n")
+            self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Recommended Catia to be full screen.\n")
         new_notice_message.place(x=10, y=50)
         new_warning_button = Button(
             self.frame, text='Warnings', font=("Helvetica", 13))
-        new_warning_button.place(x=10,y=180)
+        new_warning_button.place(x=10, y=180)
         new_error_button = Button(
             self.frame, text='Errors', font=("Helvetica", 13))
-        new_error_button.place(x=170,y=180)
+        new_error_button.place(x=170, y=180)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
         new_notice_button.place(x=500, y=180)
@@ -177,7 +237,7 @@ class App:
         new_notice_progressBar = ttk.Progressbar(
             self.frame, orient=HORIZONTAL, length=300, mode="determinate")
         new_notice_progressBar.place(x=100, y=130)
-        self.parent.after(2000,lambda:self.catiaOpen())
+        self.parent.after(2000, lambda: self.catiaOpen())
 
     def notice(self):
         global notice
@@ -185,7 +245,7 @@ class App:
         upload_progress.destroy()
         self.parent.geometry("650x250")
         notice = Message(
-            self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Remember to place this window near the top of the screen.\n- Click 'OK' to continue.")
+            self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Recommended Catia to be opened in full screen.\n- Click 'OK' to continue.")
         notice.place(x=10, y=10)
         notice_button = Button(self.frame, text='Ok', font=(
             "Helvetica", 13), command=self.toCatia)
