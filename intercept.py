@@ -1,5 +1,6 @@
 import xlrd
 import time
+import math
 import ntpath
 import pyautogui
 from tkinter import *
@@ -29,7 +30,7 @@ class App:
             pyautogui.moveTo(screen_width/2, screen_height/2)  # Needs recheck
             pyautogui.click()
             pyautogui.hotkey('ctrl', 'z')
-            time.sleep(0.5)
+            time.sleep(1)
             bom = pyautogui.locateCenterOnScreen('images/bom.png')
             if bom is not None:
                 pyperclip.copy('')
@@ -106,8 +107,21 @@ class App:
         data = all_data
         # remove partcode and pos text in first list
         data.pop(0)
+        new_percent = 100/len(data)
         # search for partcodes
         for item in data:
+            #update progress bar & percent
+            new_notice_progressBar['value'] += 100 / len(data)
+            new_notice_progressPercent.config(text=str(round(new_percent))+'%')
+            if round(new_percent) == 100:
+                new_notice_progressText.config(text='Completed',fg="green")
+                new_notice_label.config(text='Process Completed',fg="green")
+                new_notice_button.config(text='Exit',command=lambda: self.onClosing())
+                new_notice_message.config(text="- Check if there are any Errors/Warnings listed below.\n- Remember to save the file before continuing any further.")
+            self.parent.update_idletasks()
+            new_percent += 100/len(data)
+            
+            time.sleep(0.01)
             # Check if values are not empty
             if item[0] != '' and item[1] != '':
                 # Check if given position 1st or 2nd generation only
@@ -167,6 +181,7 @@ class App:
                 new_notice_message.destroy()
                 new_error_button.destroy()
                 new_warning_button.destroy()
+                new_notice_progressPercent.destroy()
                 self.notice()
 
     def catiaOpen(self):
@@ -198,6 +213,7 @@ class App:
                     new_notice_message.destroy()
                     new_error_button.destroy()
                     new_warning_button.destroy()
+                    new_notice_progressPercent.destroy()
                     self.notice()
         else:
             self.retryCatia()
@@ -213,11 +229,14 @@ class App:
         global new_notice_message
         global new_error_button
         global new_warning_button
+        global new_notice_progressBar
+        global new_notice_progressPercent
+        global new_notice_progressText
         notice.destroy()
         notice_button.destroy()
         self.parent.geometry("650x250")
         new_notice_label = Label(
-            self.frame, text="Program running...", fg="green", font=("Helvetica", 13))
+            self.frame, text="Program running...", fg="red", font=("Helvetica", 13))
         new_notice_label.place(x=10, y=10)
         new_notice_message = Message(
             self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Recommended Catia to be full screen.\n")
@@ -236,7 +255,10 @@ class App:
         new_notice_progressText.place(x=10, y=125)
         new_notice_progressBar = ttk.Progressbar(
             self.frame, orient=HORIZONTAL, length=300, mode="determinate")
-        new_notice_progressBar.place(x=100, y=130)
+        new_notice_progressBar.place(x=130, y=130)
+        new_notice_progressPercent = Label(
+            self.frame, text="", font=("Helvetica", 13))
+        new_notice_progressPercent.place(x=450, y=125)
         self.parent.after(2000, lambda: self.catiaOpen())
 
     def notice(self):
@@ -330,8 +352,8 @@ class App:
                     different_file_label.pack(side='left', padx=10)
                     self.excel_file(different_file_label)
 
-    def onClosing():
-        if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
+    def onClosing(self):
+        if messagebox.askokcancel("Exit", "Do you really wish to Exit?"):
             app.destroy()
 
 
@@ -356,7 +378,7 @@ def main():
     app.wm_title('INTERCEPT')
     app.geometry('%dx%d+%d+%d' % (width_window, height_window, x, y))
     application = App(app)
-    app.wm_protocol("WM_DELETE_WINDOW", App.onClosing)
+    app.wm_protocol("WM_DELETE_WINDOW", lambda:application.onClosing())
     app.mainloop()
 
 
