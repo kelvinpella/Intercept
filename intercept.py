@@ -1,18 +1,18 @@
 import xlrd
 import time
-import math
 import ntpath
 import pyautogui
-from tkinter import *
-from tkinter import ttk, filedialog, messagebox
 import pyperclip
-
+from tkinter import *
+from tkinter import font
+from tkinter import ttk, filedialog, messagebox
 
 class App:
 
     def __init__(self, parent):
         self.parent = parent
-        self.frame = Frame(parent).place(relwidth=1, relheight=1)
+        self.frame = Frame(parent)
+        self.frame.place(relwidth=1, relheight=1)
         self.upload_label = Label(
             self.frame, text="Upload Excel file.", font=("Helvetica", 13))
         self.upload_label.place(x=10, y=10)
@@ -50,9 +50,13 @@ class App:
                     if position[0].count('.') == 0:
                         pyautogui.press('backspace')
                         pyautogui.write(position[0])
+                        pyautogui.moveRel(-150, 0)
+                        pyautogui.click()
                     else:
                         pyautogui.press('backspace')
                         pyautogui.write(position[0])
+                        pyautogui.moveRel(-150, 0)
+                        pyautogui.click()
                         print('Child with no parent')  # TODO warn
                 # For fields with data
                 elif len(existing) != 0 and len(position[0]) != 0:
@@ -62,6 +66,8 @@ class App:
                             if existing == position[0]:
                                 pyautogui.press('backspace')
                                 pyautogui.write(position[0])
+                                pyautogui.moveRel(-150, 0)
+                                pyautogui.click()
                             else:
                                 # TODO
                                 print(
@@ -71,6 +77,8 @@ class App:
                             if existing == position[0][0]:
                                 pyautogui.press('backspace')
                                 pyautogui.write(position[0])
+                                pyautogui.moveRel(-150, 0)
+                                pyautogui.click()
                             else:
                                 print('parent not found')  # TODO skip
                     else:
@@ -84,6 +92,8 @@ class App:
                             if existing == position[0]:
                                 pyautogui.press('backspace')
                                 pyautogui.write(position[0])
+                                pyautogui.moveRel(-150, 0)
+                                pyautogui.click()
                             else:
                                 # TODO skip
                                 print(
@@ -103,13 +113,60 @@ class App:
             # pyautogui.click()
             # self.catiaOpen()
 
+    def errors(self):
+        new_notice_label.destroy()
+        new_notice_message.destroy()
+        new_notice_progressBar.destroy()
+        new_notice_progressPercent.destroy()
+        new_notice_progressText.destroy()
+        # Format window for accomodate scrollbar
+        # main_frame = Frame(self.parent)
+        # main_frame.pack(fill=BOTH,expand=1)
+        # my_canvas = Canvas(main_frame)
+        # my_canvas.pack(side=LEFT,fill=BOTH,expand=1)
+        # my_scrollbar = ttk.Scrollbar(main_frame,orient=VERTICAL,command=my_canvas.yview)
+        # my_scrollbar.pack(side=RIGHT,fill=Y)
+        # my_canvas.configure(yscrollcommand=my_scrollbar.set)
+        # my_canvas.bind('<Configure>',lambda e: my_canvas.configure(scrollregion = my_canvas.bbox('all')))
+        # second_frame = Frame(my_canvas)
+        # my_canvas.create_window((0,0),window=second_frame,anchor='nw')
+        # empty_values_label = Label(second_frame, text="Empty values found", font=("Helvetica", 13))
+        # empty_values_label.place(x=10, y=10)
+        # check if there are empty value pairs
+        if len(empty_values) != 0:
+            empty_values_label = Label(self.frame, text="Empty values found", font=("Helvetica", 13))
+            empty_values_label.place(x=10, y=10)
+            f = font.Font(empty_values_label, empty_values_label.cget("font"))
+            f.configure(underline=True)
+            empty_values_label.configure(font=f)
+            position_label = Label(self.frame, text="Position", font=("Helvetica", 13))
+            position_label.place(x=10, y=50)
+            partcode_label = Label(self.frame, text="PartCode", font=("Helvetica", 13))
+            partcode_label.place(x=150, y=50)
+            # Loop over the errors
+            # Initial positions for their labels
+            y_axis_position = 80
+            y_axis_partcode = 80
+            for error in empty_values:
+                empty_position_label = Label(self.frame, text=str(str(error[0]) if len(error[0]) != 0 else 'empty') +'\t'+"-", font=("Helvetica", 12))
+                empty_position_label.place(x=20, y=y_axis_position)
+                empty_partcode_label = Label(self.frame, text=str(error[1]) if len(error[1]) != 0 else 'empty', font=("Helvetica", 12))
+                empty_partcode_label.place(x=160, y=y_axis_partcode)
+                y_axis_position += 30
+                y_axis_partcode += 30
+
     def searchPartcode(self):
+        global empty_values
         data = all_data
         # remove partcode and pos text in first list
         data.pop(0)
         new_percent = 100/len(data)
+        # will store empty positions and partcode pairs
+        empty_values = []
         # search for partcodes
         for item in data:
+            # will store current empty position or partcodes
+            current_values = []
             #update progress bar & percent
             new_notice_progressBar['value'] += 100 / len(data)
             new_notice_progressPercent.config(text=str(round(new_percent))+'%')
@@ -120,7 +177,6 @@ class App:
                 new_notice_message.config(text="- Check if there are any Errors/Warnings listed below.\n- Remember to save the file before continuing any further.")
             self.parent.update_idletasks()
             new_percent += 100/len(data)
-            
             time.sleep(0.01)
             # Check if values are not empty
             if item[0] != '' and item[1] != '':
@@ -135,6 +191,7 @@ class App:
                         pyautogui.moveRel(100, 0)
                         pyautogui.click()
                         pyautogui.hotkey('ctrl', 'a')
+                        time.sleep(0.01)
                         pyautogui.press('backspace')
                         pyautogui.write(item[1])
                         self.searchAll(item)
@@ -144,6 +201,7 @@ class App:
                         pyautogui.click()
                         pyautogui.hotkey('ctrl', 'f')
                         pyautogui.hotkey('ctrl', 'a')
+                        time.sleep(0.01)
                         pyautogui.press('backspace')
                         pyautogui.write(item[1])
                         self.searchAll(item)
@@ -151,6 +209,9 @@ class App:
                 else:
                     print(f'{item[0]} is outsided range.')  # TODO
             else:
+                current_values.append(item[0])
+                current_values.append(item[1])
+                empty_values.append(current_values)
                 print(f'{item[0]} or {item[1]} is empty.')  # TODO
 
     def retryCatia(self):
@@ -245,7 +306,7 @@ class App:
             self.frame, text='Warnings', font=("Helvetica", 13))
         new_warning_button.place(x=10, y=180)
         new_error_button = Button(
-            self.frame, text='Errors', font=("Helvetica", 13))
+            self.frame, text='Errors', font=("Helvetica", 13), command=self.errors)
         new_error_button.place(x=170, y=180)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
