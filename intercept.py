@@ -119,41 +119,40 @@ class App:
         new_notice_progressBar.destroy()
         new_notice_progressPercent.destroy()
         new_notice_progressText.destroy()
-        # Format window for accomodate scrollbar
-        # main_frame = Frame(self.parent)
-        # main_frame.pack(fill=BOTH,expand=1)
-        # my_canvas = Canvas(main_frame)
-        # my_canvas.pack(side=LEFT,fill=BOTH,expand=1)
-        # my_scrollbar = ttk.Scrollbar(main_frame,orient=VERTICAL,command=my_canvas.yview)
-        # my_scrollbar.pack(side=RIGHT,fill=Y)
-        # my_canvas.configure(yscrollcommand=my_scrollbar.set)
-        # my_canvas.bind('<Configure>',lambda e: my_canvas.configure(scrollregion = my_canvas.bbox('all')))
-        # second_frame = Frame(my_canvas)
-        # my_canvas.create_window((0,0),window=second_frame,anchor='nw')
-        # empty_values_label = Label(second_frame, text="Empty values found", font=("Helvetica", 13))
-        # empty_values_label.place(x=10, y=10)
         # check if there are empty value pairs
         if len(empty_values) != 0:
+            # expand window
+            self.parent.geometry("650x500")
+            # Create tree to display the errors
+            error_view = ttk.Treeview(self.frame)
+            error_view['columns'] = ('Position','PartCode') # define columns
+            error_view.column('#0', width=0, stretch=NO) #0 column is created by default
+            error_view.column("Position", width=120) # properties of columns
+            error_view.column("PartCode", width=120) # properties of columns
+            error_view.heading('#0',text='')
+            error_view.heading('Position',text='Position',anchor=CENTER) # heading names
+            error_view.heading('PartCode',text='PartCode',anchor=CENTER) # heading names
             empty_values_label = Label(self.frame, text="Empty values found", font=("Helvetica", 13))
             empty_values_label.place(x=10, y=10)
-            f = font.Font(empty_values_label, empty_values_label.cget("font"))
+            f = font.Font(empty_values_label, empty_values_label.cget("font")) # get underline functionality
             f.configure(underline=True)
             empty_values_label.configure(font=f)
-            position_label = Label(self.frame, text="Position", font=("Helvetica", 13))
-            position_label.place(x=10, y=50)
-            partcode_label = Label(self.frame, text="PartCode", font=("Helvetica", 13))
-            partcode_label.place(x=150, y=50)
-            # Loop over the errors
-            # Initial positions for their labels
-            y_axis_position = 80
-            y_axis_partcode = 80
+            # modify styles of treeview
+            style = ttk.Style()
+            style.configure("Treeview.Heading", font=("Helvetica", 13))
+            style.theme_use('default') # useful to display the styles below
+            style.configure("Treeview",background='white',fieldbackground = 'white',rowheight = 30) 
+            style.map('Treeview', background=[('selected',"#557A95")])            
+            error_view.tag_configure('evenrow', font=("Helvetica", 12),background='light blue') # change styles of data
+            error_view.tag_configure('oddrow', font=("Helvetica", 12),background="white") # change styles of data 
+            count = 0
             for error in empty_values:
-                empty_position_label = Label(self.frame, text=str(str(error[0]) if len(error[0]) != 0 else 'empty') +'\t'+"-", font=("Helvetica", 12))
-                empty_position_label.place(x=20, y=y_axis_position)
-                empty_partcode_label = Label(self.frame, text=str(error[1]) if len(error[1]) != 0 else 'empty', font=("Helvetica", 12))
-                empty_partcode_label.place(x=160, y=y_axis_partcode)
-                y_axis_position += 30
-                y_axis_partcode += 30
+                if count % 2 == 0:
+                    error_view.insert(parent='',index='end',iid=count,text='',tags=("evenrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
+                else:
+                    error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
+                count += 1
+            error_view.place(x=20,y=50,relwidth=0.9,relheight=0.5)
 
     def searchPartcode(self):
         global empty_values
@@ -304,13 +303,13 @@ class App:
         new_notice_message.place(x=10, y=50)
         new_warning_button = Button(
             self.frame, text='Warnings', font=("Helvetica", 13))
-        new_warning_button.place(x=10, y=180)
+        new_warning_button.place(relx=0.01, rely=0.8)
         new_error_button = Button(
             self.frame, text='Errors', font=("Helvetica", 13), command=self.errors)
-        new_error_button.place(x=170, y=180)
+        new_error_button.place(relx=0.3, rely=0.8)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
-        new_notice_button.place(x=500, y=180)
+        new_notice_button.place(relx=0.8, rely=0.8)
         new_notice_progressText = Label(
             self.frame, text="Status", font=("Helvetica", 13))
         new_notice_progressText.place(x=10, y=125)
