@@ -152,7 +152,8 @@ class App:
                 else:
                     error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
                 count += 1
-            error_view.place(x=20,y=50,relwidth=0.9,relheight=0.5)
+            # vary the height of tree based on available data     
+            error_view.place(x=20,y=50,relwidth=0.9,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)
 
     def searchPartcode(self):
         global empty_values
