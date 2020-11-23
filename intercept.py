@@ -123,8 +123,14 @@ class App:
         if len(empty_values) != 0:
             # expand window
             self.parent.geometry("650x500")
+            # Create scrollbar in case there are many errors
+            error_frame = Frame(self.frame)
+            scrollbar = Scrollbar(error_frame)
+            scrollbar.pack(side=RIGHT,fill=Y)
             # Create tree to display the errors
             error_view = ttk.Treeview(self.frame)
+            error_view.configure(yscrollcommand=scrollbar.set)
+            scrollbar.configure(command=error_view.yview) # configure scrollbar
             error_view['columns'] = ('Position','PartCode') # define columns
             error_view.column('#0', width=0, stretch=NO) #0 column is created by default
             error_view.column("Position", width=120) # properties of columns
@@ -152,8 +158,9 @@ class App:
                 else:
                     error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
                 count += 1
-            # vary the height of tree based on available data     
-            error_view.place(x=20,y=50,relwidth=0.9,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)
+            # vary the height of tree based on available data
+            error_frame.place(x=20,y=50,relwidth=0.83,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)    
+            error_view.place(x=20,y=50,relwidth=0.8,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)
 
     def searchPartcode(self):
         global empty_values
@@ -174,6 +181,8 @@ class App:
                 new_notice_progressText.config(text='Completed',fg="green")
                 new_notice_label.config(text='Process Completed',fg="green")
                 new_notice_button.config(text='Exit',command=lambda: self.onClosing())
+                new_warning_button.config(state=NORMAL)
+                new_error_button.config(state=NORMAL)
                 new_notice_message.config(text="- Check if there are any Errors/Warnings listed below.\n- Remember to save the file before continuing any further.")
             self.parent.update_idletasks()
             new_percent += 100/len(data)
@@ -303,10 +312,10 @@ class App:
             self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Recommended Catia to be full screen.\n")
         new_notice_message.place(x=10, y=50)
         new_warning_button = Button(
-            self.frame, text='Warnings', font=("Helvetica", 13))
+            self.frame, text='Warnings',state=DISABLED, font=("Helvetica", 13))
         new_warning_button.place(relx=0.01, rely=0.8)
         new_error_button = Button(
-            self.frame, text='Errors', font=("Helvetica", 13), command=self.errors)
+            self.frame, text='Errors', state=DISABLED,font=("Helvetica", 13), command=self.errors)
         new_error_button.place(relx=0.3, rely=0.8)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
