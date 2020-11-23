@@ -7,6 +7,8 @@ from tkinter import *
 from tkinter import font
 from tkinter import ttk, filedialog, messagebox
 
+from xlrd.book import display_cell_address
+
 class App:
 
     def __init__(self, parent):
@@ -119,57 +121,75 @@ class App:
         new_notice_progressBar.destroy()
         new_notice_progressPercent.destroy()
         new_notice_progressText.destroy()
-        # check if there are empty value pairs
-        if len(empty_values) != 0:
-            # expand window
-            self.parent.geometry("650x500")
-            # Create scrollbar in case there are many errors
-            error_frame = Frame(self.frame)
-            scrollbar = Scrollbar(error_frame)
-            scrollbar.pack(side=RIGHT,fill=Y)
-            # Create tree to display the errors
-            error_view = ttk.Treeview(self.frame)
-            error_view.configure(yscrollcommand=scrollbar.set)
-            scrollbar.configure(command=error_view.yview) # configure scrollbar
-            error_view['columns'] = ('Position','PartCode') # define columns
-            error_view.column('#0', width=0, stretch=NO) #0 column is created by default
-            error_view.column("Position", width=120) # properties of columns
-            error_view.column("PartCode", width=120) # properties of columns
-            error_view.heading('#0',text='')
-            error_view.heading('Position',text='Position',anchor=CENTER) # heading names
-            error_view.heading('PartCode',text='PartCode',anchor=CENTER) # heading names
-            empty_values_label = Label(self.frame, text="Empty values found", font=("Helvetica", 13))
-            empty_values_label.place(x=10, y=10)
-            f = font.Font(empty_values_label, empty_values_label.cget("font")) # get underline functionality
-            f.configure(underline=True)
-            empty_values_label.configure(font=f)
-            # modify styles of treeview
-            style = ttk.Style()
-            style.configure("Treeview.Heading", font=("Helvetica", 13))
-            style.theme_use('default') # useful to display the styles below
-            style.configure("Treeview",background='white',fieldbackground = 'white',rowheight = 30) 
-            style.map('Treeview', background=[('selected',"#557A95")])            
-            error_view.tag_configure('evenrow', font=("Helvetica", 12),background='light blue') # change styles of data
-            error_view.tag_configure('oddrow', font=("Helvetica", 12),background="white") # change styles of data 
-            count = 0
-            for error in empty_values:
-                if count % 2 == 0:
-                    error_view.insert(parent='',index='end',iid=count,text='',tags=("evenrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
-                else:
-                    error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
-                count += 1
-            # vary the height of tree based on available data
-            error_frame.place(x=20,y=50,relwidth=0.83,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)    
-            error_view.place(x=20,y=50,relwidth=0.8,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)
+        # put all errors together
+        total_errors = [empty_values,beyond_scope]
+        # list for displayed errors
+        displayed_errors = []
+        for error in total_errors:
+            if len(error) != 0:
+                displayed_errors.append(error)
+        # display the errors
+        y_space = 10
+        for error in displayed_errors:
+            number = error.count(error[0]) # How many errors of the current type
+            displayed_error_label = Label(self.frame,text=f'{error[0]}({number})',font=("Helvetica", 13))
+            displayed_error_label.place(x=10,y=y_space)
+            y_space += 40
+
+        ## check if there are empty value pairs
+        #if len(empty_values) != 0:
+        #    # expand window
+        #    self.parent.geometry("650x500")
+        #    # Create scrollbar in case there are many errors
+        #    error_frame = Frame(self.frame)
+        #    scrollbar = Scrollbar(error_frame)
+        #    scrollbar.pack(side=RIGHT,fill=Y)
+        #    # Create tree to display the errors
+        #    error_view = ttk.Treeview(self.frame)
+        #    error_view.configure(yscrollcommand=scrollbar.set)
+        #    scrollbar.configure(command=error_view.yview) # configure scrollbar
+        #    error_view['columns'] = ('Position','PartCode') # define columns
+        #    error_view.column('#0', width=0, stretch=NO) #0 column is created by default
+        #    error_view.column("Position", width=120) # properties of columns
+        #    error_view.column("PartCode", width=120) # properties of columns
+        #    error_view.heading('#0',text='')
+        #    error_view.heading('Position',text='Position',anchor=CENTER) # heading names
+        #    error_view.heading('PartCode',text='PartCode',anchor=CENTER) # heading names
+        #    empty_values_label = Label(self.frame, text="Empty values found", font=("Helvetica", 13))
+        #    empty_values_label.place(x=10, y=10)
+        #    f = font.Font(empty_values_label, empty_values_label.cget("font")) # get underline functionality
+        #    f.configure(underline=True)
+        #    empty_values_label.configure(font=f)
+        #    # modify styles of treeview
+        #    style = ttk.Style()
+        #    style.configure("Treeview.Heading", font=("Helvetica", 13))
+        #    style.theme_use('default') # useful to display the styles below
+        #    style.configure("Treeview",background='white',fieldbackground = 'white',rowheight = 30) 
+        #    style.map('Treeview', background=[('selected',"#557A95")])            
+        #    error_view.tag_configure('evenrow', font=("Helvetica", 12),background='light blue') # change styles of data
+        #    error_view.tag_configure('oddrow', font=("Helvetica", 12),background="white") # change styles of data 
+        #    count = 0
+        #    for error in empty_values:
+        #        if count % 2 == 0:
+        #            error_view.insert(parent='',index='end',iid=count,text='',tags=("evenrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
+        #        else:
+        #            error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
+        #        count += 1
+        #    # vary the height of tree based on available data
+        #    error_frame.place(x=20,y=50,relwidth=0.83,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)    
+        #    error_view.place(x=20,y=50,relwidth=0.8,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)
 
     def searchPartcode(self):
         global empty_values
+        global beyond_scope
         data = all_data
         # remove partcode and pos text in first list
         data.pop(0)
         new_percent = 100/len(data)
         # will store empty positions and partcode pairs
         empty_values = []
+        # will store positions beyond scope
+        beyond_scope = []
         # search for partcodes
         for item in data:
             # will store current empty position or partcodes
@@ -189,6 +209,8 @@ class App:
             time.sleep(0.01)
             # Check if values are not empty
             if item[0] != '' and item[1] != '':
+                # will store curent position beyond scope 
+                failed_position = []
                 # Check if given position 1st or 2nd generation only
                 if item[0].count('.') <= 1:
                     # will go to find search
@@ -216,12 +238,15 @@ class App:
                         self.searchAll(item)
 
                 else:
-                    print(f'{item[0]} is outsided range.')  # TODO
+                    failed_position.append(item[0])
+                    failed_position.append(item[1])
+                    beyond_scope.append('Positions beyond scope found')
+                    beyond_scope.append(failed_position)
             else:
                 current_values.append(item[0])
                 current_values.append(item[1])
+                empty_values.append('Empty values found')
                 empty_values.append(current_values)
-                print(f'{item[0]} or {item[1]} is empty.')  # TODO
 
     def retryCatia(self):
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
@@ -386,7 +411,10 @@ class App:
                         if col == 1 or col == 3:
                             data = sheet.cell_value(row, col)
                             # useful when searching in Catia Composer
-                            new_data = data.replace('/', "_")
+                            try:
+                                new_data = data.replace('/', "_")
+                            except AttributeError:
+                                pass
                             current_row.append(new_data)
                     all_data.append(current_row)
                 if not len(all_data):
