@@ -82,11 +82,15 @@ class App:
                                 pyautogui.moveRel(-150, 0)
                                 pyautogui.click()
                             else:
+                                pyautogui.moveRel(-150, 0)
+                                pyautogui.click()
                                 print('parent not found')  # TODO skip
                     else:
                         # check if field value has decimal point but incoming value doesn't
                         # never overwrite any child *
                         if position[0].count('.') == 0:
+                            pyautogui.moveRel(-150, 0)
+                            pyautogui.click()
                             # TODO skip
                             print('Could not overwrite child by parent.')
                         else:
@@ -98,6 +102,8 @@ class App:
                                 pyautogui.click()
                             else:
                                 # TODO skip
+                                pyautogui.moveRel(-150, 0)
+                                pyautogui.click()
                                 print(
                                     'Could not overwrite child by a different child')
                 else:
@@ -128,56 +134,56 @@ class App:
         for error in total_errors:
             if len(error) != 0:
                 displayed_errors.append(error)
+                
+        # expand window
+        self.parent.geometry("650x500")
         # display the errors
-        y_space = 10
+        y_heading = 0
+        y_tree = 50
         for error in displayed_errors:
+            # Create scrollbar in case there are many errors
+            error_frame = Frame(self.frame)
+            scrollbar = Scrollbar(error_frame)
+            scrollbar.pack(side=RIGHT,fill=Y)
+            # Create tree to display the errors
+            error_view = ttk.Treeview(self.frame)
+            error_view.configure(yscrollcommand=scrollbar.set)
+            scrollbar.configure(command=error_view.yview) # configure scrollbar
+            error_view['columns'] = ('Position','PartCode') # define columns
+            error_view.column('#0', width=0, stretch=NO) #0 column is created by default
+            error_view.column("Position", width=120) # properties of columns
+            error_view.column("PartCode", width=120) # properties of columns
+            error_view.heading('#0',text='')
+            error_view.heading('Position',text='Position',anchor=CENTER) # heading names
+            error_view.heading('PartCode',text='PartCode',anchor=CENTER) # heading names
             number = error.count(error[0]) # How many errors of the current type
-            displayed_error_label = Label(self.frame,text=f'{error[0]}({number})',font=("Helvetica", 13))
-            displayed_error_label.place(x=10,y=y_space)
-            y_space += 40
-
-        ## check if there are empty value pairs
-        #if len(empty_values) != 0:
-        #    # expand window
-        #    self.parent.geometry("650x500")
-        #    # Create scrollbar in case there are many errors
-        #    error_frame = Frame(self.frame)
-        #    scrollbar = Scrollbar(error_frame)
-        #    scrollbar.pack(side=RIGHT,fill=Y)
-        #    # Create tree to display the errors
-        #    error_view = ttk.Treeview(self.frame)
-        #    error_view.configure(yscrollcommand=scrollbar.set)
-        #    scrollbar.configure(command=error_view.yview) # configure scrollbar
-        #    error_view['columns'] = ('Position','PartCode') # define columns
-        #    error_view.column('#0', width=0, stretch=NO) #0 column is created by default
-        #    error_view.column("Position", width=120) # properties of columns
-        #    error_view.column("PartCode", width=120) # properties of columns
-        #    error_view.heading('#0',text='')
-        #    error_view.heading('Position',text='Position',anchor=CENTER) # heading names
-        #    error_view.heading('PartCode',text='PartCode',anchor=CENTER) # heading names
-        #    empty_values_label = Label(self.frame, text="Empty values found", font=("Helvetica", 13))
-        #    empty_values_label.place(x=10, y=10)
-        #    f = font.Font(empty_values_label, empty_values_label.cget("font")) # get underline functionality
-        #    f.configure(underline=True)
-        #    empty_values_label.configure(font=f)
-        #    # modify styles of treeview
-        #    style = ttk.Style()
-        #    style.configure("Treeview.Heading", font=("Helvetica", 13))
-        #    style.theme_use('default') # useful to display the styles below
-        #    style.configure("Treeview",background='white',fieldbackground = 'white',rowheight = 30) 
-        #    style.map('Treeview', background=[('selected',"#557A95")])            
-        #    error_view.tag_configure('evenrow', font=("Helvetica", 12),background='light blue') # change styles of data
-        #    error_view.tag_configure('oddrow', font=("Helvetica", 12),background="white") # change styles of data 
-        #    count = 0
-        #    for error in empty_values:
-        #        if count % 2 == 0:
-        #            error_view.insert(parent='',index='end',iid=count,text='',tags=("evenrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
-        #        else:
-        #            error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error[0] if len(error[0]) != 0 else 'Empty', error[1] if len(error[1]) != 0 else 'Empty'))
-        #        count += 1
-        #    # vary the height of tree based on available data
-        #    error_frame.place(x=20,y=50,relwidth=0.83,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)    
-        #    error_view.place(x=20,y=50,relwidth=0.8,height=(count + 1) * 30 if (count + 1) * 30 < 240 else 240)
+            displayed_error_label = Label(self.frame,text=f'{error[0]} ({number})',font=("Helvetica", 13))
+            displayed_error_label.place(x=10,y=y_heading + 10)
+            f = font.Font(displayed_error_label,displayed_error_label.cget("font")) # get underline functionality
+            f.configure(underline=True)
+            displayed_error_label.configure(font=f)
+            # modify styles of treeview
+            style = ttk.Style()
+            style.configure("Treeview.Heading", font=("Helvetica", 13))
+            style.theme_use('default') # useful to display the styles below
+            style.configure("Treeview",background='white',fieldbackground = 'white',rowheight = 30) 
+            style.map('Treeview', background=[('selected',"#557A95")])            
+            error_view.tag_configure('evenrow', font=("Helvetica", 12),background='light blue') # change styles of data
+            error_view.tag_configure('oddrow', font=("Helvetica", 12),background="white") # change styles of data 
+            count = 0
+            for error_item in error:
+                if type(error_item) == list: #Remove the titles eg empty value found
+                    if count % 2 == 0:
+                        error_view.insert(parent='',index='end',iid=count,text='',tags=("evenrow",), values=(error_item[0] if len(error_item[0]) != 0 else 'Empty', error_item[1] if len(error_item[1]) != 0 else 'Empty'))
+                    else:
+                        error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error_item[0] if len(error_item[0]) != 0 else 'Empty', error_item[1] if len(error_item[1]) != 0 else 'Empty'))
+                    count += 1
+            # vary the height of tree based on available data
+            variable_height = (count + 1) * 30 if (count + 1) * 30 < 150 else 150
+            error_frame.place(x=20,y=y_tree,relwidth=0.83,height=variable_height)    
+            error_view.place(x=20,y=y_tree,relwidth=0.8,height=variable_height)
+            y_heading += (variable_height + 50)
+            y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
 
     def searchPartcode(self):
         global empty_values
@@ -338,13 +344,13 @@ class App:
         new_notice_message.place(x=10, y=50)
         new_warning_button = Button(
             self.frame, text='Warnings',state=DISABLED, font=("Helvetica", 13))
-        new_warning_button.place(relx=0.01, rely=0.8)
+        new_warning_button.place(relx=0.01, rely=0.81)
         new_error_button = Button(
             self.frame, text='Errors', state=DISABLED,font=("Helvetica", 13), command=self.errors)
-        new_error_button.place(relx=0.3, rely=0.8)
+        new_error_button.place(relx=0.3, rely=0.81)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
-        new_notice_button.place(relx=0.8, rely=0.8)
+        new_notice_button.place(relx=0.8, rely=0.81)
         new_notice_progressText = Label(
             self.frame, text="Status", font=("Helvetica", 13))
         new_notice_progressText.place(x=10, y=125)
@@ -413,9 +419,9 @@ class App:
                             # useful when searching in Catia Composer
                             try:
                                 new_data = data.replace('/', "_")
+                                current_row.append(new_data)
                             except AttributeError:
                                 pass
-                            current_row.append(new_data)
                     all_data.append(current_row)
                 if not len(all_data):
                     empty_label = Label(
