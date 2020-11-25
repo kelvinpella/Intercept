@@ -7,7 +7,6 @@ from tkinter import *
 from tkinter import font
 from tkinter import ttk, filedialog, messagebox
 
-from xlrd.book import display_cell_address
 
 class App:
 
@@ -23,6 +22,7 @@ class App:
         self.upload_button.place(width=180, height=50, x=10, y=60)
 
     def searchAll(self, position):
+        global manual_errors
         # will go to find searchAll
         searchall = pyautogui.locateCenterOnScreen('images/searchall.png')
         if searchall is not None:
@@ -34,6 +34,8 @@ class App:
             pyautogui.hotkey('ctrl', 'z')
             time.sleep(1)
             bom = pyautogui.locateCenterOnScreen('images/bom.png')
+            # list to store current missing bom
+            current_values = []
             if bom is not None:
                 pyperclip.copy('')
                 pyautogui.moveTo(bom[0], bom[1])
@@ -109,17 +111,15 @@ class App:
                 else:
                     print('Found null value position number from excel.')
             else:
-                messagebox.showinfo('tittle', "cant see bom")
-                # pyautogui.moveTo(x, y/8)
-                # pyautogui.moveRel(50,0)
-                # pyautogui.click()
-                # self.catiaOpen()
+                current_values.append(position[0])
+                current_values.append(position[1])
+                manual_errors.append('Positions require manual Assignment')
+                manual_errors.append(current_values)
+                # messagebox.askretrycancel('Error', "cant see bom")
+                # print(position[0])
         else:
-            messagebox.showinfo('tittle', "cant see search all")
-            # pyautogui.moveTo(x, y/8)
-            # pyautogui.moveRel(50,0)
-            # pyautogui.click()
-            # self.catiaOpen()
+            if messagebox.askretrycancel('Error', "Something went wrong."):
+                self.notice()
 
     def errors(self):
         new_notice_label.destroy()
@@ -128,66 +128,120 @@ class App:
         new_notice_progressPercent.destroy()
         new_notice_progressText.destroy()
         # put all errors together
-        total_errors = [empty_values,beyond_scope]
+        total_errors = [empty_values, beyond_scope, manual_errors]
+        print(manual_errors)
         # list for displayed errors
         displayed_errors = []
         for error in total_errors:
             if len(error) != 0:
                 displayed_errors.append(error)
-                
-        # expand window
-        self.parent.geometry("650x500")
+
+        # expand window depending on the number of error types
+        if len(displayed_errors) <= 2:
+            self.parent.geometry("650x500")
+            new_warning_button.place(relx=0.01, rely=0.88)
+            new_error_button.place(relx=0.3, rely=0.88)
+            new_notice_button.place(relx=0.8, rely=0.88)
+        elif len(displayed_errors) == 3:
+            self.parent.geometry("650x700")
+            new_warning_button.place(relx=0.01, rely=0.88)
+            new_error_button.place(relx=0.3, rely=0.88)
+            new_notice_button.place(relx=0.8, rely=0.88)
+        else:
+            self.parent.geometry('650x900')
+            new_warning_button.place(relx=0.01, rely=0.88)
+            new_error_button.place(relx=0.3, rely=0.88)
+            new_notice_button.place(relx=0.8, rely=0.88)
+
         # display the errors
         y_heading = 0
         y_tree = 50
+        third_tree = 0
         for error in displayed_errors:
             # Create scrollbar in case there are many errors
             error_frame = Frame(self.frame)
             scrollbar = Scrollbar(error_frame)
-            scrollbar.pack(side=RIGHT,fill=Y)
+            scrollbar.pack(side=RIGHT, fill=Y)
             # Create tree to display the errors
             error_view = ttk.Treeview(self.frame)
             error_view.configure(yscrollcommand=scrollbar.set)
-            scrollbar.configure(command=error_view.yview) # configure scrollbar
-            error_view['columns'] = ('Position','PartCode') # define columns
-            error_view.column('#0', width=0, stretch=NO) #0 column is created by default
-            error_view.column("Position", width=120) # properties of columns
-            error_view.column("PartCode", width=120) # properties of columns
-            error_view.heading('#0',text='')
-            error_view.heading('Position',text='Position',anchor=CENTER) # heading names
-            error_view.heading('PartCode',text='PartCode',anchor=CENTER) # heading names
-            number = error.count(error[0]) # How many errors of the current type
-            displayed_error_label = Label(self.frame,text=f'{error[0]} ({number})',font=("Helvetica", 13))
-            displayed_error_label.place(x=10,y=y_heading + 10)
-            f = font.Font(displayed_error_label,displayed_error_label.cget("font")) # get underline functionality
+            # configure scrollbar
+            scrollbar.configure(command=error_view.yview)
+            error_view['columns'] = ('Position', 'PartCode')  # define columns
+            # 0 column is created by default
+            error_view.column('#0', width=0, stretch=NO)
+            error_view.column("Position", width=120)  # properties of columns
+            error_view.column("PartCode", width=120)  # properties of columns
+            error_view.heading('#0', text='')
+            error_view.heading('Position', text='Position',
+                               anchor=CENTER)  # heading names
+            error_view.heading('PartCode', text='PartCode',
+                               anchor=CENTER)  # heading names
+            # How many errors of the current type
+            number = error.count(error[0])
+            displayed_error_label = Label(
+                self.frame, text=f'{error[0]} ({number})', font=("Helvetica", 13))
+            displayed_error_label.place(x=10, y=y_heading + 10)
+            f = font.Font(displayed_error_label, displayed_error_label.cget(
+                "font"))  # get underline functionality
             f.configure(underline=True)
             displayed_error_label.configure(font=f)
             # modify styles of treeview
             style = ttk.Style()
             style.configure("Treeview.Heading", font=("Helvetica", 13))
-            style.theme_use('default') # useful to display the styles below
-            style.configure("Treeview",background='white',fieldbackground = 'white',rowheight = 30) 
-            style.map('Treeview', background=[('selected',"#557A95")])            
-            error_view.tag_configure('evenrow', font=("Helvetica", 12),background='light blue') # change styles of data
-            error_view.tag_configure('oddrow', font=("Helvetica", 12),background="white") # change styles of data 
+            style.theme_use('default')  # useful to display the styles below
+            style.configure("Treeview", background='white',
+                            fieldbackground='white', rowheight=30)
+            style.map('Treeview', background=[('selected', "#557A95")])
+            error_view.tag_configure('evenrow', font=(
+                "Helvetica", 12), background='light blue')  # change styles of data
+            error_view.tag_configure('oddrow', font=(
+                "Helvetica", 12), background="white")  # change styles of data
             count = 0
             for error_item in error:
-                if type(error_item) == list: #Remove the titles eg empty value found
+                if type(error_item) == list:  # Remove the titles eg empty value found
                     if count % 2 == 0:
-                        error_view.insert(parent='',index='end',iid=count,text='',tags=("evenrow",), values=(error_item[0] if len(error_item[0]) != 0 else 'Empty', error_item[1] if len(error_item[1]) != 0 else 'Empty'))
+                        error_view.insert(parent='', index='end', iid=count, text='', tags=("evenrow",), values=(
+                            error_item[0] if len(error_item[0]) != 0 else 'Empty', error_item[1] if len(error_item[1]) != 0 else 'Empty'))
                     else:
-                        error_view.insert(parent='',index='end',iid=count,text='',tags=("oddrow",), values=(error_item[0] if len(error_item[0]) != 0 else 'Empty', error_item[1] if len(error_item[1]) != 0 else 'Empty'))
+                        error_view.insert(parent='', index='end', iid=count, text='', tags=("oddrow",), values=(
+                            error_item[0] if len(error_item[0]) != 0 else 'Empty', error_item[1] if len(error_item[1]) != 0 else 'Empty'))
                     count += 1
-            # vary the height of tree based on available data
-            variable_height = (count + 1) * 30 if (count + 1) * 30 < 150 else 150
-            error_frame.place(x=20,y=y_tree,relwidth=0.83,height=variable_height)    
-            error_view.place(x=20,y=y_tree,relwidth=0.8,height=variable_height)
-            y_heading += (variable_height + 50)
-            y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
+            # vary the height of tree based on available errors
+            if len(displayed_errors) <= 2:
+                variable_height = (count + 1) * 30 if (count + 1) * 30 < 150 else 150
+                error_frame.place(x=20, y=y_tree, relwidth=0.83,
+                                  height=variable_height)
+                error_view.place(x=20, y=y_tree, relwidth=0.8,
+                                 height=variable_height)
+                y_heading += (variable_height + 50)
+                y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
+            elif len(displayed_errors) == 3:
+                variable_height = (count + 1) * 30 if (count + 1) * 30 < 150 else 150
+                error_frame.place(x=20, y=y_tree if third_tree == 0 else third_tree, relwidth=0.83,
+                                  height=variable_height)
+                error_view.place(x=20, y=y_tree if third_tree == 0 else third_tree, relwidth=0.8,
+                                 height=variable_height)
+                y_heading += (variable_height + 50)
+                y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
+                if y_tree == 280:
+                    third_tree = y_heading + 50 if y_heading + 50 < 490 else 490
+                else:
+                    third_tree = y_heading + 50 if y_heading + 50 < 490 else 490 # in case second tree doesnt reach 280   
+            # else:
+                # variable_height = (count + 1) * \
+                # 30 if (count + 1) * 30 < 150 else 150
+                # error_frame.place(x=20, y=y_tree, relwidth=0.83,
+                #   height=variable_height)
+                # error_view.place(x=20, y=y_tree, relwidth=0.8,
+                #  height=variable_height)
+                # y_heading += (variable_height + 50)
+                # y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
 
     def searchPartcode(self):
         global empty_values
         global beyond_scope
+        global manual_errors
         data = all_data
         # remove partcode and pos text in first list
         data.pop(0)
@@ -196,26 +250,30 @@ class App:
         empty_values = []
         # will store positions beyond scope
         beyond_scope = []
+        # list to store all manual errors from searchall function
+        manual_errors = []
         # search for partcodes
         for item in data:
             # will store current empty position or partcodes
             current_values = []
-            #update progress bar & percent
+            # update progress bar & percent
             new_notice_progressBar['value'] += 100 / len(data)
             new_notice_progressPercent.config(text=str(round(new_percent))+'%')
             if round(new_percent) == 100:
-                new_notice_progressText.config(text='Completed',fg="green")
-                new_notice_label.config(text='Process Completed',fg="green")
-                new_notice_button.config(text='Exit',command=lambda: self.onClosing())
+                new_notice_progressText.config(text='Completed', fg="green")
+                new_notice_label.config(text='Process Completed', fg="green")
+                new_notice_button.config(
+                    text='Exit', command=lambda: self.onClosing())
                 new_warning_button.config(state=NORMAL)
                 new_error_button.config(state=NORMAL)
-                new_notice_message.config(text="- Check if there are any Errors/Warnings listed below.\n- Remember to save the file before continuing any further.")
+                new_notice_message.config(
+                    text="- Check if there are any Errors/Warnings listed below.\n- Remember to save the file before continuing any further.")
             self.parent.update_idletasks()
             new_percent += 100/len(data)
             time.sleep(0.01)
             # Check if values are not empty
             if item[0] != '' and item[1] != '':
-                # will store curent position beyond scope 
+                # will store curent position beyond scope
                 failed_position = []
                 # Check if given position 1st or 2nd generation only
                 if item[0].count('.') <= 1:
@@ -233,7 +291,6 @@ class App:
                         pyautogui.write(item[1])
                         self.searchAll(item)
                     else:
-                        # Needs recheck
                         pyautogui.moveTo(screen_width/2, screen_height/2)
                         pyautogui.click()
                         pyautogui.hotkey('ctrl', 'f')
@@ -343,10 +400,10 @@ class App:
             self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Recommended Catia to be full screen.\n")
         new_notice_message.place(x=10, y=50)
         new_warning_button = Button(
-            self.frame, text='Warnings',state=DISABLED, font=("Helvetica", 13))
+            self.frame, text='Warnings', state=DISABLED, font=("Helvetica", 13))
         new_warning_button.place(relx=0.01, rely=0.81)
         new_error_button = Button(
-            self.frame, text='Errors', state=DISABLED,font=("Helvetica", 13), command=self.errors)
+            self.frame, text='Errors', state=DISABLED, font=("Helvetica", 13), command=self.errors)
         new_error_button.place(relx=0.3, rely=0.81)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
@@ -482,7 +539,7 @@ def main():
     app.wm_title('INTERCEPT')
     app.geometry('%dx%d+%d+%d' % (width_window, height_window, x, y))
     application = App(app)
-    app.wm_protocol("WM_DELETE_WINDOW", lambda:application.onClosing())
+    app.wm_protocol("WM_DELETE_WINDOW", lambda: application.onClosing())
     app.mainloop()
 
 
