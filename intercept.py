@@ -22,7 +22,6 @@ class App:
         self.upload_button.place(width=180, height=50, x=10, y=60)
 
     def searchAll(self, position):
-        global manual_errors
         # will go to find searchAll
         searchall = pyautogui.locateCenterOnScreen('images/searchall.png')
         if searchall is not None:
@@ -47,9 +46,8 @@ class App:
                 time.sleep(.01)
                 existing = str(pyperclip.paste())
                 time.sleep(.01)
-                print(existing)
                 # For empty field value
-                if len(existing) == 0 and len(position[0]) != 0:
+                if len(existing) == 0:
                     # check if incoming value has no decimal point
                     if position[0].count('.') == 0:
                         pyautogui.press('backspace')
@@ -61,9 +59,13 @@ class App:
                         pyautogui.write(position[0])
                         pyautogui.moveRel(-150, 0)
                         pyautogui.click()
-                        print('Child with no parent')  # TODO warn
+                        # Child with no parent
+                        current_values.append(position[0])
+                        current_values.append(position[1])
+                        manual_errors.append('Positions require manual Assignment/Check up')
+                        manual_errors.append(current_values)
                 # For fields with data
-                elif len(existing) != 0 and len(position[0]) != 0:
+                else:
                     if existing.count('.') == 0:
                         # check if both field value and incoming value has no decimal point
                         if position[0].count('.') == 0:
@@ -73,9 +75,13 @@ class App:
                                 pyautogui.moveRel(-150, 0)
                                 pyautogui.click()
                             else:
-                                # TODO
-                                print(
-                                    'Existing value is different from incoming value.')
+                                pyautogui.moveRel(-150, 0)
+                                pyautogui.click()
+                                # Existing value is different from incoming value.
+                                current_values.append(position[0])
+                                current_values.append(position[1])
+                                manual_errors.append('Positions require manual Assignment/Check up')
+                                manual_errors.append(current_values)
                         else:
                             # check if field value has no decimal point but incoming value has
                             if existing == position[0][0]:
@@ -86,15 +92,22 @@ class App:
                             else:
                                 pyautogui.moveRel(-150, 0)
                                 pyautogui.click()
-                                print('parent not found')  # TODO skip
+                                # parent not found
+                                current_values.append(position[0])
+                                current_values.append(position[1])
+                                manual_errors.append('Positions require manual Assignment/Check up')
+                                manual_errors.append(current_values)
                     else:
                         # check if field value has decimal point but incoming value doesn't
                         # never overwrite any child *
                         if position[0].count('.') == 0:
                             pyautogui.moveRel(-150, 0)
                             pyautogui.click()
-                            # TODO skip
-                            print('Could not overwrite child by parent.')
+                            # Could not overwrite child by parent.
+                            current_values.append(position[0])
+                            current_values.append(position[1])
+                            manual_errors.append('Positions require manual Assignment/Check up')
+                            manual_errors.append(current_values)
                         else:
                             # check if both field value and incoming value has decimal point
                             if existing == position[0]:
@@ -103,38 +116,24 @@ class App:
                                 pyautogui.moveRel(-150, 0)
                                 pyautogui.click()
                             else:
-                                # TODO skip
                                 pyautogui.moveRel(-150, 0)
                                 pyautogui.click()
-                                print(
-                                    'Could not overwrite child by a different child')
-                else:
-                    print('Found null value position number from excel.')
+                                # Could not overwrite child by a different child.
+                                current_values.append(position[0])
+                                current_values.append(position[1])
+                                manual_errors.append('Positions require manual Assignment/Check up')
+                                manual_errors.append(current_values)
             else:
                 current_values.append(position[0])
                 current_values.append(position[1])
-                manual_errors.append('Positions require manual Assignment')
+                manual_errors.append('Positions require manual Assignment/Check up')
                 manual_errors.append(current_values)
-                # messagebox.askretrycancel('Error', "cant see bom")
-                # print(position[0])
         else:
             if messagebox.askretrycancel('Error', "Can't see 'search all'."):
                 time.sleep(1)
                 self.searchAll(position)
             else:
                 self.cancelOperation()  
-                # new_notice_button.destroy()
-                # new_error_button.destroy()
-                # new_warning_button.destroy()
-                # self.upload_label.destroy()
-                # self.upload_button.destroy()
-                # file_label.destroy()
-                # upload_progress.destroy()
-                # new_notice_message.destroy()
-                # new_notice_progressBar.destroy()
-                # new_notice_progressPercent.destroy()
-                # new_notice_progressText.destroy()
-                # self.notice()
 
     def errors(self):
         new_notice_label.destroy()
@@ -144,7 +143,6 @@ class App:
         new_notice_progressText.destroy()
         # put all errors together
         total_errors = [empty_values, beyond_scope, manual_errors]
-        print(manual_errors)
         # list for displayed errors
         displayed_errors = []
         for error in total_errors:
@@ -154,18 +152,15 @@ class App:
         # expand window depending on the number of error types
         if len(displayed_errors) <= 2:
             self.parent.geometry("650x500")
-            new_warning_button.place(relx=0.01, rely=0.88)
-            new_error_button.place(relx=0.3, rely=0.88)
+            new_error_button.place(relx=0.1, rely=0.88)
             new_notice_button.place(relx=0.8, rely=0.88)
         elif len(displayed_errors) == 3:
             self.parent.geometry("650x700")
-            new_warning_button.place(relx=0.01, rely=0.88)
-            new_error_button.place(relx=0.3, rely=0.88)
+            new_error_button.place(relx=0.1, rely=0.88)
             new_notice_button.place(relx=0.8, rely=0.88)
         else:
             self.parent.geometry('650x900')
-            new_warning_button.place(relx=0.01, rely=0.88)
-            new_error_button.place(relx=0.3, rely=0.88)
+            new_error_button.place(relx=0.1, rely=0.88)
             new_notice_button.place(relx=0.8, rely=0.88)
 
         # display the errors
@@ -246,15 +241,6 @@ class App:
                 else:
                     third_tree = y_heading + 50 if y_heading + \
                         50 < 490 else 490  # in case second tree doesnt reach 280
-            # else:
-                # variable_height = (count + 1) * \
-                # 30 if (count + 1) * 30 < 150 else 150
-                # error_frame.place(x=20, y=y_tree, relwidth=0.83,
-                #   height=variable_height)
-                # error_view.place(x=20, y=y_tree, relwidth=0.8,
-                #  height=variable_height)
-                # y_heading += (variable_height + 50)
-                # y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
 
     def searchPartcode(self):
         global empty_values
@@ -282,10 +268,9 @@ class App:
                 new_notice_label.config(text='Process Completed', fg="green")
                 new_notice_button.config(
                     text='Exit', command=lambda: self.onClosing())
-                new_warning_button.config(state=NORMAL)
                 new_error_button.config(state=NORMAL)
                 new_notice_message.config(
-                    text="- Check if there are any Errors/Warnings listed below.\n- Remember to save the file before continuing any further.")
+                    text="- Check if there are any Errors listed below.\n- Remember to save the file before continuing any further.")
             self.parent.update_idletasks()
             new_percent += 100/len(data)
             time.sleep(0.01)
@@ -356,7 +341,6 @@ class App:
                 new_notice_label.destroy()
                 new_notice_message.destroy()
                 new_error_button.destroy()
-                new_warning_button.destroy()
                 new_notice_progressPercent.destroy()
                 self.notice()
 
@@ -388,7 +372,6 @@ class App:
                     new_notice_label.destroy()
                     new_notice_message.destroy()
                     new_error_button.destroy()
-                    new_warning_button.destroy()
                     new_notice_progressPercent.destroy()
                     self.notice()
         else:
@@ -404,7 +387,6 @@ class App:
         global new_notice_label
         global new_notice_message
         global new_error_button
-        global new_warning_button
         global new_notice_progressBar
         global new_notice_progressPercent
         global new_notice_progressText
@@ -417,12 +399,9 @@ class App:
         new_notice_message = Message(
             self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Recommended Catia to be full screen.\n")
         new_notice_message.place(x=10, y=50)
-        new_warning_button = Button(
-            self.frame, text='Warnings', state=DISABLED, font=("Helvetica", 13))
-        new_warning_button.place(relx=0.01, rely=0.81)
         new_error_button = Button(
             self.frame, text='Errors', state=DISABLED, font=("Helvetica", 13), command=self.errors)
-        new_error_button.place(relx=0.3, rely=0.81)
+        new_error_button.place(relx=0.1, rely=0.81)
         new_notice_button = Button(
             self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
         new_notice_button.place(relx=0.8, rely=0.81)
