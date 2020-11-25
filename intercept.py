@@ -118,7 +118,18 @@ class App:
                 # messagebox.askretrycancel('Error', "cant see bom")
                 # print(position[0])
         else:
-            if messagebox.askretrycancel('Error', "Something went wrong."):
+            if messagebox.askretrycancel('Error', "Can't see 'search all'."):
+                new_notice_button.destroy()
+                new_error_button.destroy()
+                new_warning_button.destroy()
+                self.upload_label.destroy()
+                self.upload_button.destroy()
+                file_label.destroy()
+                upload_progress.destroy()
+                new_notice_message.destroy()
+                new_notice_progressBar.destroy()
+                new_notice_progressPercent.destroy()
+                new_notice_progressText.destroy()
                 self.notice()
 
     def errors(self):
@@ -209,7 +220,8 @@ class App:
                     count += 1
             # vary the height of tree based on available errors
             if len(displayed_errors) <= 2:
-                variable_height = (count + 1) * 30 if (count + 1) * 30 < 150 else 150
+                variable_height = (count + 1) * \
+                    30 if (count + 1) * 30 < 150 else 150
                 error_frame.place(x=20, y=y_tree, relwidth=0.83,
                                   height=variable_height)
                 error_view.place(x=20, y=y_tree, relwidth=0.8,
@@ -217,7 +229,8 @@ class App:
                 y_heading += (variable_height + 50)
                 y_tree = y_heading + 50 if y_heading + 50 < 280 else 280
             elif len(displayed_errors) == 3:
-                variable_height = (count + 1) * 30 if (count + 1) * 30 < 150 else 150
+                variable_height = (count + 1) * \
+                    30 if (count + 1) * 30 < 150 else 150
                 error_frame.place(x=20, y=y_tree if third_tree == 0 else third_tree, relwidth=0.83,
                                   height=variable_height)
                 error_view.place(x=20, y=y_tree if third_tree == 0 else third_tree, relwidth=0.8,
@@ -227,7 +240,8 @@ class App:
                 if y_tree == 280:
                     third_tree = y_heading + 50 if y_heading + 50 < 490 else 490
                 else:
-                    third_tree = y_heading + 50 if y_heading + 50 < 490 else 490 # in case second tree doesnt reach 280   
+                    third_tree = y_heading + 50 if y_heading + \
+                        50 < 490 else 490  # in case second tree doesnt reach 280
             # else:
                 # variable_height = (count + 1) * \
                 # 30 if (count + 1) * 30 < 150 else 150
@@ -432,6 +446,7 @@ class App:
         notice_button.place(x=450, y=200)
 
     def destroy_widget(self):
+        global file_label
         self.upload_label.destroy()
         self.upload_button.destroy()
         file_label = Label(self.frame, anchor='w', width=600, height=120,
