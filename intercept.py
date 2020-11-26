@@ -349,8 +349,7 @@ class App:
             for error_item in error:
                 if type(error_item) == list:
                     error_number += 1
-                    new_error_button.config(
-                        state=NORMAL if error_number != 0 else DISABLED, text=f'Errors ({error_number})')
+        new_error_button.config(state=NORMAL if error_number != 0 else DISABLED, text=f'Errors ({error_number})')           
 
     def retryCatia(self):
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
