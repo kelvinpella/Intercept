@@ -434,7 +434,7 @@ class App:
             self.frame, text="Program running...", fg="red", font=("Helvetica", 13))
         new_notice_label.place(x=10, y=10)
         new_notice_message = Message(
-            self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Recommended Catia to be full screen.\n")
+            self.frame, width=650, font=("Helvetica", 13), text="- Don't use the mouse/keyboard during this operation.\n- Make sure Catia is opened in full screen.\n")
         new_notice_message.place(x=10, y=50)
         new_error_button = Button(
             self.frame, text='Errors', state=DISABLED, font=("Helvetica", 13), command=self.errors)
