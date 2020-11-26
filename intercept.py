@@ -62,8 +62,10 @@ class App:
                         # Child with no parent
                         current_values.append(position[0])
                         current_values.append(position[1])
-                        manual_errors.append('Positions require manual Assignment/Check up')
+                        manual_errors.append(
+                            'Positions require manual Assignment/Check up')
                         manual_errors.append(current_values)
+
                 # For fields with data
                 else:
                     if existing.count('.') == 0:
@@ -80,8 +82,10 @@ class App:
                                 # Existing value is different from incoming value.
                                 current_values.append(position[0])
                                 current_values.append(position[1])
-                                manual_errors.append('Positions require manual Assignment/Check up')
+                                manual_errors.append(
+                                    'Positions require manual Assignment/Check up')
                                 manual_errors.append(current_values)
+
                         else:
                             # check if field value has no decimal point but incoming value has
                             if existing == position[0][0]:
@@ -95,8 +99,10 @@ class App:
                                 # parent not found
                                 current_values.append(position[0])
                                 current_values.append(position[1])
-                                manual_errors.append('Positions require manual Assignment/Check up')
+                                manual_errors.append(
+                                    'Positions require manual Assignment/Check up')
                                 manual_errors.append(current_values)
+
                     else:
                         # check if field value has decimal point but incoming value doesn't
                         # never overwrite any child *
@@ -106,8 +112,10 @@ class App:
                             # Could not overwrite child by parent.
                             current_values.append(position[0])
                             current_values.append(position[1])
-                            manual_errors.append('Positions require manual Assignment/Check up')
+                            manual_errors.append(
+                                'Positions require manual Assignment/Check up')
                             manual_errors.append(current_values)
+
                         else:
                             # check if both field value and incoming value has decimal point
                             if existing == position[0]:
@@ -121,19 +129,23 @@ class App:
                                 # Could not overwrite child by a different child.
                                 current_values.append(position[0])
                                 current_values.append(position[1])
-                                manual_errors.append('Positions require manual Assignment/Check up')
+                                manual_errors.append(
+                                    'Positions require manual Assignment/Check up')
                                 manual_errors.append(current_values)
+
             else:
                 current_values.append(position[0])
                 current_values.append(position[1])
-                manual_errors.append('Positions require manual Assignment/Check up')
+                manual_errors.append(
+                    'Positions require manual Assignment/Check up')
                 manual_errors.append(current_values)
+
         else:
             if messagebox.askretrycancel('Error', "Can't see 'search all'."):
                 time.sleep(1)
                 self.searchAll(position)
             else:
-                self.cancelOperation()  
+                self.cancelOperation()
 
     def errors(self):
         new_notice_label.destroy()
@@ -221,6 +233,9 @@ class App:
             if len(displayed_errors) <= 2:
                 variable_height = (count + 1) * \
                     30 if (count + 1) * 30 < 150 else 150
+                if len(displayed_errors) == 1:
+                    variable_height = (count + 1) * \
+                        30 if (count + 1) * 30 < 330 else 330
                 error_frame.place(x=20, y=y_tree, relwidth=0.83,
                                   height=variable_height)
                 error_view.place(x=20, y=y_tree, relwidth=0.8,
@@ -242,6 +257,10 @@ class App:
                     third_tree = y_heading + 50 if y_heading + \
                         50 < 490 else 490  # in case second tree doesnt reach 280
 
+    def completed(self):
+        messagebox.showinfo(
+            'Success', "COMPLETED! \n Check if there are any Errors listed.")
+
     def searchPartcode(self):
         global empty_values
         global beyond_scope
@@ -256,6 +275,8 @@ class App:
         beyond_scope = []
         # list to store all manual errors from searchall function
         manual_errors = []
+        # keep track of number of errors
+        error_number = 0
         # search for partcodes
         for item in data:
             # will store current empty position or partcodes
@@ -263,14 +284,15 @@ class App:
             # update progress bar & percent
             new_notice_progressBar['value'] += 100 / len(data)
             new_notice_progressPercent.config(text=str(round(new_percent))+'%')
+            # change state of error button depending on number of errors
             if round(new_percent) == 100:
                 new_notice_progressText.config(text='Completed', fg="green")
                 new_notice_label.config(text='Process Completed', fg="green")
                 new_notice_button.config(
                     text='Exit', command=lambda: self.onClosing())
-                new_error_button.config(state=NORMAL)
                 new_notice_message.config(
                     text="- Check if there are any Errors listed below.\n- Remember to save the file before continuing any further.")
+                self.parent.after(6000, lambda: self.completed())
             self.parent.update_idletasks()
             new_percent += 100/len(data)
             time.sleep(0.01)
@@ -308,11 +330,27 @@ class App:
                     failed_position.append(item[1])
                     beyond_scope.append('Positions beyond scope found')
                     beyond_scope.append(failed_position)
+
             else:
                 current_values.append(item[0])
                 current_values.append(item[1])
                 empty_values.append('Empty values found')
                 empty_values.append(current_values)
+
+        # put all errors together
+        total_errors = [empty_values, beyond_scope, manual_errors]
+        # list for displayed errors
+        displayed_errors = []
+        for error in total_errors:
+            if len(error) != 0:
+                displayed_errors.append(error)
+        # keep track of number of errors
+        for error in displayed_errors:
+            for error_item in error:
+                if type(error_item) == list:
+                    error_number += 1
+                    new_error_button.config(
+                        state=NORMAL if error_number != 0 else DISABLED, text=f'Errors ({error_number})')
 
     def retryCatia(self):
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
