@@ -63,7 +63,7 @@ class App:
                         current_values.append(position[0])
                         current_values.append(position[1])
                         manual_errors.append(
-                            'Positions require manual Assignment/Check up')
+                            'Positions require manual assignment/check up')
                         manual_errors.append(current_values)
 
                 # For fields with data
@@ -83,7 +83,7 @@ class App:
                                 current_values.append(position[0])
                                 current_values.append(position[1])
                                 manual_errors.append(
-                                    'Positions require manual Assignment/Check up')
+                                    'Positions require manual assignment/check up')
                                 manual_errors.append(current_values)
 
                         else:
@@ -100,7 +100,7 @@ class App:
                                 current_values.append(position[0])
                                 current_values.append(position[1])
                                 manual_errors.append(
-                                    'Positions require manual Assignment/Check up')
+                                    'Positions require manual assignment/check up')
                                 manual_errors.append(current_values)
 
                     else:
@@ -113,7 +113,7 @@ class App:
                             current_values.append(position[0])
                             current_values.append(position[1])
                             manual_errors.append(
-                                'Positions require manual Assignment/Check up')
+                                'Positions require manual assignment/check up')
                             manual_errors.append(current_values)
 
                         else:
@@ -130,14 +130,14 @@ class App:
                                 current_values.append(position[0])
                                 current_values.append(position[1])
                                 manual_errors.append(
-                                    'Positions require manual Assignment/Check up')
+                                    'Positions require manual assignment/check up')
                                 manual_errors.append(current_values)
 
             else:
                 current_values.append(position[0])
                 current_values.append(position[1])
                 manual_errors.append(
-                    'Positions require manual Assignment/Check up')
+                    'Positions require manual assignment/check up')
                 manual_errors.append(current_values)
 
         else:
@@ -349,7 +349,8 @@ class App:
             for error_item in error:
                 if type(error_item) == list:
                     error_number += 1
-        new_error_button.config(state=NORMAL if error_number != 0 else DISABLED, text=f'Errors ({error_number})')           
+        new_error_button.config(
+            state=NORMAL if error_number != 0 else DISABLED, text=f'Errors ({error_number})')
 
     def retryCatia(self):
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
@@ -459,7 +460,7 @@ class App:
         upload_progress.destroy()
         self.parent.geometry("650x250")
         notice = Message(
-            self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Recommended Catia to be opened in full screen.\n- Click 'OK' to continue.")
+            self.frame, width=600, font=("Helvetica", 13), text="IMPORTANT NOTICE.\n\n- Make sure the required 3D is open in Catia Composer.\n- Make sure no other apps block Catia Composer's screen.\n- Make sure Catia is opened in full screen.\n- Click 'OK' to continue.")
         notice.place(x=10, y=10)
         notice_button = Button(self.frame, text='Ok', font=(
             "Helvetica", 13), command=self.toCatia)
