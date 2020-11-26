@@ -145,7 +145,7 @@ class App:
                 time.sleep(1)
                 self.searchAll(position)
             else:
-                self.cancelOperation()
+                app.destroy()
 
     def errors(self):
         new_notice_label.destroy()
@@ -277,6 +277,8 @@ class App:
         manual_errors = []
         # keep track of number of errors
         error_number = 0
+        # set initial value of progress bar 
+        new_notice_progressBar['value'] = 0
         # search for partcodes
         for item in data:
             # will store current empty position or partcodes
@@ -375,12 +377,7 @@ class App:
                     pyautogui.click()
                     self.catiaOpen()
             else:
-                new_notice_button.destroy()
-                new_notice_label.destroy()
-                new_notice_message.destroy()
-                new_error_button.destroy()
-                new_notice_progressPercent.destroy()
-                self.notice()
+                self.interfere()
 
     def catiaOpen(self):
         catia = pyautogui.locateCenterOnScreen('images/catia.png')
@@ -415,12 +412,8 @@ class App:
         else:
             self.retryCatia()
 
-    def cancelOperation(self):
-        if messagebox.askokcancel("Cancel", "This operation will be cancelled."):
-            self.parent.geometry("600x120")
-            App(app)
-
     def toCatia(self):
+        global cancel_id
         global new_notice_button
         global new_notice_label
         global new_notice_message
@@ -441,7 +434,7 @@ class App:
             self.frame, text='Errors', state=DISABLED, font=("Helvetica", 13), command=self.errors)
         new_error_button.place(relx=0.1, rely=0.81)
         new_notice_button = Button(
-            self.frame, text='Cancel', font=("Helvetica", 13), command=self.cancelOperation)
+            self.frame, text='Cancel', font=("Helvetica", 13), command=self.haltProgram)
         new_notice_button.place(relx=0.8, rely=0.81)
         new_notice_progressText = Label(
             self.frame, text="Status", font=("Helvetica", 13))
@@ -452,7 +445,7 @@ class App:
         new_notice_progressPercent = Label(
             self.frame, text="", font=("Helvetica", 13))
         new_notice_progressPercent.place(x=450, y=125)
-        self.parent.after(2000, lambda: self.catiaOpen())
+        cancel_id = self.parent.after(2000, lambda: self.catiaOpen())
 
     def notice(self):
         global notice
@@ -548,6 +541,20 @@ class App:
                         self.frame, text="Try a different excel file.", font=("Helvetica", 13))
                     different_file_label.pack(side='left', padx=10)
                     self.excel_file(different_file_label)
+    # from Cancel Button when app is running
+
+    def haltProgram(self):
+        global cancel_id
+        self.parent.after_cancel(cancel_id)
+        self.onClosing()
+        cancel_id = self.parent.after(1000, lambda: self.catiaOpen())
+    # to interfere when 3d is not open
+
+    def interfere(self):
+        global cancel_id
+        self.onClosing()
+        cancel_id = self.parent.after(1000, lambda: self.catiaOpen())
+    # close the window prompt
 
     def onClosing(self):
         if messagebox.askokcancel("Exit", "Do you really wish to Exit?"):
