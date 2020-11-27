@@ -497,7 +497,7 @@ class App:
                 # loop over rows and columns to extract Position and Partcode pairs
                 for row in range(sheet.nrows):
                     current_row = []
-                    upload_progress.pack(side='left', padx=10)
+                    upload_progress.pack(side='left')
                     row_progress.pack(side='left')
                     row_progress['value'] += 100 / sheet.nrows
                     self.parent.update_idletasks()
