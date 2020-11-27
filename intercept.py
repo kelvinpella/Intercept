@@ -258,10 +258,12 @@ class App:
                         50 < 490 else 490  # in case second tree doesnt reach 280
 
     def completed(self):
+        message = "Process completed.\n- Found Errors." if error_number != 0 else 'Completed successfully.\n- No errors found'
         messagebox.showinfo(
-            'Success', "COMPLETED! \n Check if there are any Errors listed.")
+            'Message', message)
 
     def searchPartcode(self):
+        global error_number
         global empty_values
         global beyond_scope
         global manual_errors
@@ -277,7 +279,7 @@ class App:
         manual_errors = []
         # keep track of number of errors
         error_number = 0
-        # set initial value of progress bar 
+        # set initial value of progress bar
         new_notice_progressBar['value'] = 0
         # search for partcodes
         for item in data:
@@ -294,7 +296,7 @@ class App:
                     text='Exit', command=lambda: self.onClosing())
                 new_notice_message.config(
                     text="- Check if there are any Errors listed below.\n- Remember to save the file before continuing any further.")
-                self.parent.after(6000, lambda: self.completed())
+
             self.parent.update_idletasks()
             new_percent += 100/len(data)
             time.sleep(0.01)
@@ -353,6 +355,7 @@ class App:
                     error_number += 1
         new_error_button.config(
             state=NORMAL if error_number != 0 else DISABLED, text=f'Errors ({error_number})')
+        self.parent.after(500, lambda: self.completed())
 
     def retryCatia(self):
         thumb = pyautogui.locateCenterOnScreen('images/thumb.png')
